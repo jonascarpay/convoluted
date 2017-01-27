@@ -9,6 +9,7 @@
 
 module Network where
 
+import Volume
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude
 import Data.Singletons.Prelude.Num
@@ -34,15 +35,8 @@ class OutputLayer l (i :: Size) where
   runOutput :: Monad m => l -> Volume i -> m (Vector o Probs)
   getError  :: Monad m => l -> Vector o OneHot -> m (Volume i)
 
-data Size = S Nat Nat Nat
-
 type family Prod (s :: Size) :: Nat
 type instance Prod ('S a b c) = (a :* b) :* c
-
-data VectorType = Probs | OneHot
-
-newtype Volume (s :: Size) = Vol Int
-newtype Vector (s :: Nat) (t :: VectorType) = Vec Int
 
 data Network (i :: Size) (ls :: [*]) (o :: Nat) where
   NNil  :: OutputLayer x i => !x                       -> Network i '[x]      (Prod i)
