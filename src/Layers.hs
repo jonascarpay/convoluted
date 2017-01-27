@@ -12,6 +12,7 @@
 module Layers where
 
 import Network
+import Volume
 import Core
 import Data.Singletons.Prelude
 import Data.Singletons.TypeLits
@@ -21,7 +22,8 @@ data MultiSoftMax (cs :: [Nat]) = MultiSoftMax
 
 instance (Sum cs ~ Prod s) => OutputLayer (MultiSoftMax cs) s where
   -- runOutput :: Monad m => MultiSoftMax -> Volume i -> (Vector o Probs)
-  runOutput = undefined
+  runOutput _ vol@(Vol x) = do
+    undefined
 
 class KnownNats (a :: [Nat]) where
   natVals :: p a -> [Integer]

@@ -1,2 +1,5 @@
+import qualified VolumeSpec as VS
+
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main = do _ <- VS.runTests
+          return ()

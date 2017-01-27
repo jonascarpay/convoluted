@@ -24,6 +24,7 @@ library
                      , singletons
                      , repa
                      , MonadRandom
+                     , vector
 
 test-suite convoluted-test
   type:                exitcode-stdio-1.0
@@ -34,6 +35,8 @@ test-suite convoluted-test
   build-depends:       base
                      , convoluted
                      , QuickCheck
+                     , vector
+                     , repa
 
 benchmark convoluted-bench
   type:                exitcode-stdio-1.0
