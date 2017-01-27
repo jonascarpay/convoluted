@@ -33,8 +33,8 @@ class Updatable l => Layer l (i :: Size) (o :: Size) where
   runBackwards :: Monad m => l -> Volume i -> Volume o -> m (Gradient l, Volume o)
 
 class OutputLayer l (i :: Size) where
-  runOutput :: Monad m => l -> Volume i -> m (Vector o Probs)
-  getError  :: Monad m => l -> Vector o OneHot -> m (Volume i)
+  runOutput :: Monad m => l -> Volume i -> m (Vector (Prod i) Probs)
+  getError  :: Monad m => l -> Vector (Prod i) OneHot -> m (Volume i)
 
 data Network (i :: Size) (ls :: [*]) (o :: Nat) where
   NNil  :: OutputLayer x i => !x                       -> Network i '[x]      (Prod i)

@@ -33,9 +33,10 @@ softMax !xs = U.map (/expSum) exps
 
 -- | Apply softmax to slices of the vector of lengths indicated by the list
 multiSoftMax :: [Int] -> U.Vector Double -> U.Vector Double
-multiSoftMax ls xs = U.concat $ sms (cycle ls) xs
+multiSoftMax !ls !xs = U.concat $ sms (cycle ls) xs
   where
     sms (l:ls) xs | U.null xs = []
+                  | U.length xs < l = undefined
                   | otherwise = let (h,t) = U.splitAt l xs
                                  in softMax h : sms ls t
 

@@ -1,0 +1,74 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_NAME	hasktags
+ArbUnboxed	./test/VolumeSpec.hs	/^newtype ArbUnboxed = ArbUnboxed (U.Vector Double) deriving (Eq, Show)$/;"	nt	line:9	language:Haskell
+ArbUnboxed	./test/VolumeSpec.hs	/^newtype ArbUnboxed = ArbUnboxed (U.Vector Double) deriving (Eq, Show)$/;"	cons	line:9	language:Haskell
+Core	./src/Core.hs	/^module Core where$/;"	m	line:6	language:Haskell
+CreatableNetwork	./src/Network.hs	/^class CreatableNetwork (i :: Size) (xs :: [*]) (o :: Nat) where$/;"	c	line:47	language:Haskell
+GCons	./src/Network.hs	/^  GCons :: Updatable x => Gradient x -> Gradients xs -> Gradients (x ': xs)$/;"	c_a	line:45	language:Haskell
+GNil	./src/Network.hs	/^  GNil  :: Updatable x => Gradient x -> Gradients '[x]$/;"	c_a	line:44	language:Haskell
+Gradient	./src/Network.hs	/^  type Gradient l :: *$/;"	t	line:27	language:Haskell
+Gradients	./src/Network.hs	/^data Gradients :: [*] -> * where$/;"	d_gadt	line:43	language:Haskell
+Layer	./src/Network.hs	/^class Updatable l => Layer l (i :: Size) (o :: Size) where$/;"	c	line:31	language:Haskell
+Layers	./src/Layers.hs	/^module Layers where$/;"	m	line:13	language:Haskell
+LearningParameters	./src/Network.hs	/^data LearningParameters = LearningParameters$/;"	d	line:20	language:Haskell
+LearningParameters	./src/Network.hs	/^data LearningParameters = LearningParameters$/;"	d	line:20	language:Haskell
+MultiSoftMax	./src/Layers.hs	/^data MultiSoftMax (cs :: [Nat]) = MultiSoftMax$/;"	d	line:23	language:Haskell
+MultiSoftMax	./src/Layers.hs	/^data MultiSoftMax (cs :: [Nat]) = MultiSoftMax$/;"	d	line:23	language:Haskell
+NCons	./src/Network.hs	/^  NCons :: Layer x i o     => !x -> !(Network o xs no) -> Network i (x ': xs) no$/;"	c_a	line:41	language:Haskell
+NNil	./src/Network.hs	/^  NNil  :: OutputLayer x i => !x                       -> Network i '[x]      (Prod i)$/;"	c_a	line:40	language:Haskell
+Network	./src/Network.hs	/^data Network (i :: Size) (ls :: [*]) (o :: Nat) where$/;"	d_gadt	line:39	language:Haskell
+OneHot	./src/Core.hs	/^data VectorType = Probs | OneHot$/;"	cons	line:12	language:Haskell
+OutputLayer	./src/Network.hs	/^class OutputLayer l (i :: Size) where$/;"	c	line:35	language:Haskell
+Probs	./src/Core.hs	/^data VectorType = Probs | OneHot$/;"	d	line:12	language:Haskell
+Prod	./src/Core.hs	/^type instance Prod ('S a b c) = (a :* b) :* c$/;"	fi	line:15	language:Haskell
+S	./src/Core.hs	/^data Size = S Nat Nat Nat$/;"	d	line:11	language:Haskell
+Size	./src/Core.hs	/^data Size = S Nat Nat Nat$/;"	d	line:11	language:Haskell
+Updatable	./src/Network.hs	/^class Updatable l where$/;"	c	line:26	language:Haskell
+Vec	./src/Volume.hs	/^newtype Vector  (s :: Nat) (t :: VectorType) = Vec (Array U DIM2 Double)$/;"	cons	line:26	language:Haskell
+Vector	./src/Volume.hs	/^newtype Vector  (s :: Nat) (t :: VectorType) = Vec (Array U DIM2 Double)$/;"	nt	line:26	language:Haskell
+VectorType	./src/Core.hs	/^data VectorType = Probs | OneHot$/;"	d	line:12	language:Haskell
+Vol	./src/Volume.hs	/^newtype Volume  (s :: Size)                  = Vol (Array U DIM4 Double)$/;"	cons	line:24	language:Haskell
+Volume	./src/Volume.hs	/^newtype Volume  (s :: Size)                  = Vol (Array U DIM4 Double)$/;"	nt	line:24	language:Haskell
+VolumeSpec	./test/VolumeSpec.hs	/^module VolumeSpec where$/;"	m	line:3	language:Haskell
+Weights	./src/Volume.hs	/^newtype Weights (s :: Size)                  = Wts (Array U DIM4 Double)$/;"	nt	line:25	language:Haskell
+Wts	./src/Volume.hs	/^newtype Weights (s :: Size)                  = Wts (Array U DIM4 Double)$/;"	cons	line:25	language:Haskell
+applyDelta	./src/Network.hs	/^  applyDelta      :: Monad m => LearningParameters -> l -> Gradient l -> m (l, Gradient l)$/;"	ft	line:28	language:Haskell
+approx	./test/VolumeSpec.hs	/^approx :: Double -> Double -> Double -> Bool$/;"	ft	line:29	language:Haskell
+approx	./test/VolumeSpec.hs	/^approx x y epsilon = abs (x - y) < epsilon$/;"	fi	line:30	language:Haskell
+approx3	./test/VolumeSpec.hs	/^approx3 :: Double -> Double -> Bool$/;"	ft	line:32	language:Haskell
+approx3	./test/VolumeSpec.hs	/^x `approx3` y = approx x y 1e-3$/;"	fi	line:33	language:Haskell
+createRandom	./src/Network.hs	/^  createRandom    :: MonadRandom m => m l$/;"	ft	line:29	language:Haskell
+family	./src/Core.hs	/^type family Prod (s :: Size) :: Nat$/;"	t	line:14	language:Haskell
+getError	./src/Network.hs	/^  getError  :: Monad m => l -> Vector (Prod i) OneHot -> m (Volume i)$/;"	ft	line:37	language:Haskell
+i	./src/Network.hs	/^data Network (i :: Size) (ls :: [*]) (o :: Nat) where$/;"	c_a	line:39	language:Haskell
+i	./src/Network.hs	/^data Network (i :: Size) (ls :: [*]) (o :: Nat) where$/;"	ft	line:39	language:Haskell
+instance	./src/Core.hs	/^type instance Prod ('S a b c) = (a :* b) :* c$/;"	t	line:15	language:Haskell
+instance	./src/Layers.hs	/^instance (SingI cs, SingI (Sum cs), Sum cs ~ Prod s) => OutputLayer (MultiSoftMax cs) s where$/;"	fi	line:25	language:Haskell
+instance	./test/VolumeSpec.hs	/^instance Arbitrary ArbUnboxed where$/;"	fi	line:11	language:Haskell
+l	./src/Network.hs	/^  type Gradient l :: *$/;"	ft	line:27	language:Haskell
+l	./src/Network.hs	/^  runBackwards :: Monad m => l -> Volume i -> Volume o -> m (Gradient l, Volume o)$/;"	c	line:33	language:Haskell
+l	./src/Network.hs	/^  getError  :: Monad m => l -> Vector (Prod i) OneHot -> m (Volume i)$/;"	c	line:37	language:Haskell
+learningMomentum	./src/Network.hs	/^  , learningMomentum       :: !Double$/;"	c_a	line:22	language:Haskell
+learningRate	./src/Network.hs	/^  { learningRate           :: !Double$/;"	c_a	line:21	language:Haskell
+learningRegularization	./src/Network.hs	/^  , learningRegularization :: !Double$/;"	c_a	line:23	language:Haskell
+ls	./src/Network.hs	/^data Network (i :: Size) (ls :: [*]) (o :: Nat) where$/;"	c_a	line:39	language:Haskell
+m	./src/Network.hs	/^  createRandom    :: MonadRandom m => m l$/;"	c	line:29	language:Haskell
+m	./src/Network.hs	/^  randomNetwork :: MonadRandom m => m (Network i xs o)$/;"	c	line:48	language:Haskell
+main	./Setup.hs	/^main = defaultMain$/;"	fi	line:2	language:Haskell
+main	./test/Spec.hs	/^main :: IO ()$/;"	ft	line:3	language:Haskell
+main	./test/Spec.hs	/^main = do _ <- VS.runTests$/;"	fi	line:4	language:Haskell
+multiSoftMax	./src/Volume.hs	/^multiSoftMax :: [Int] -> U.Vector Double -> U.Vector Double$/;"	ft	line:35	language:Haskell
+multiSoftMax	./src/Volume.hs	/^multiSoftMax !ls !xs = U.concat $ sms (cycle ls) xs$/;"	fi	line:36	language:Haskell
+o	./src/Network.hs	/^data Network (i :: Size) (ls :: [*]) (o :: Nat) where$/;"	c_a	line:39	language:Haskell
+prop_multiSoftMax_length_invariant	./test/VolumeSpec.hs	/^prop_multiSoftMax_length_invariant (ArbUnboxed xs) =$/;"	fi	line:25	language:Haskell
+prop_multiSoftMax_single	./test/VolumeSpec.hs	/^prop_multiSoftMax_single           (ArbUnboxed xs) =$/;"	fi	line:23	language:Haskell
+prop_softMax_length_invariant	./test/VolumeSpec.hs	/^prop_softMax_length_invariant (ArbUnboxed xs) = U.length xs == U.length (softMax xs)$/;"	fi	line:19	language:Haskell
+prop_softMax_sum_one	./test/VolumeSpec.hs	/^prop_softMax_sum_one          (ArbUnboxed xs) = U.sum (softMax xs) `approx3` 1$/;"	fi	line:17	language:Haskell
+randomNetwork	./src/Network.hs	/^  randomNetwork :: MonadRandom m => m (Network i xs o)$/;"	ft	line:48	language:Haskell
+runBackwards	./src/Network.hs	/^  runBackwards :: Monad m => l -> Volume i -> Volume o -> m (Gradient l, Volume o)$/;"	ft	line:33	language:Haskell
+runForward	./src/Network.hs	/^  runForward   :: Monad m => l -> Volume i -> m (Volume o)$/;"	ft	line:32	language:Haskell
+runOutput	./src/Network.hs	/^  runOutput :: Monad m => l -> Volume i -> m (Vector (Prod i) Probs)$/;"	ft	line:36	language:Haskell
+runTests	./test/VolumeSpec.hs	/^runTests = $quickCheckAll$/;"	fi	line:36	language:Haskell
+softMax	./src/Volume.hs	/^softMax :: U.Vector Double -> U.Vector Double$/;"	ft	line:28	language:Haskell
+softMax	./src/Volume.hs	/^softMax !xs = U.map (\/expSum) exps$/;"	fi	line:29	language:Haskell
