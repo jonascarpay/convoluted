@@ -12,6 +12,7 @@
 module Layers where
 
 import Network
+import Core
 import Data.Singletons.Prelude
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.List
