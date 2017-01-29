@@ -29,16 +29,12 @@ class Updatable l where
   createRandom    :: MonadRandom m => m l
 
 class Updatable l => Layer l (i :: Size) (o :: Size) where
-  runForward   :: Monad m => l -> Volume i -> m (Volume o)
-  runBackwards :: Monad m => l -> Volume i -> Volume o -> m (Gradient l, Volume o)
-
-class OutputLayer l (i :: Size) where
-  runOutput :: Monad m => l -> Volume i -> m (Vector (Prod i) Probs)
-  getError  :: Monad m => l -> Vector (Prod i) OneHot -> m (Volume i)
+  runForward   :: Monad m => l -> SArrays i -> m (SArrays o)
+  runBackwards :: Monad m => l -> SArrays i -> SArrays o -> m (Gradient l, SArrays o)
 
 data Network (i :: Size) (ls :: [*]) (o :: Nat) where
-  NNil  :: OutputLayer x i => !x                       -> Network i '[x]      (Prod i)
-  NCons :: Layer x i o     => !x -> !(Network o xs no) -> Network i (x ': xs) no
+  NNil  :: Layer x i (S1 o) => !x                       -> Network i '[x]      o
+  NCons :: Layer x i o      => !x -> !(Network o xs no) -> Network i (x ': xs) no
 
 data Gradients :: [*] -> * where
   GNil  :: Updatable x => Gradient x -> Gradients '[x]
