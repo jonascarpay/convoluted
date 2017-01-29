@@ -29,8 +29,8 @@ class Updatable l where
   createRandom    :: MonadRandom m => m l
 
 class Updatable l => Layer l (i :: Size) (o :: Size) where
-  runForward   :: Monad m => l -> SArrays i -> m (SArrays o)
-  runBackwards :: Monad m => l -> SArrays i -> SArrays o -> m (Gradient l, SArrays o)
+  runForward   :: Monad m => l -> SBatch U i -> m (SBatch U o)
+  runBackwards :: Monad m => l -> SBatch U i -> SBatch U o -> m (Gradient l, SBatch U o)
 
 data Network (i :: Size) (ls :: [*]) (o :: Nat) where
   NNil  :: Layer x i (S1 o) => !x                       -> Network i '[x]      o

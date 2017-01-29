@@ -7,7 +7,10 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 
-module Volume where
+module Volume 
+  ( module Volume
+  , D, U
+  )where
 
 import Core
 import Data.List (foldl')
@@ -22,16 +25,8 @@ import qualified Data.Vector.Unboxed as U
 --   be promoted to type classes later to accomodate both batches and
 --   samples, or different precision data types for working on a GPU.
 
-newtype SArray  (s :: Size) = SArray  (Array U (RepaShape s)      Double)
-newtype SArrays (s :: Size) = SArrays (Array U (RepaShape s:.Int) Double)
-
-newtype OneHot a = OneHot (SArray (S1 a))
-
-type family RepaShape (s :: Size)
-type instance RepaShape (S1 a)       = DIM1
-type instance RepaShape (S2 a b)     = DIM2
-type instance RepaShape (S3 a b c)   = DIM3
-type instance RepaShape (S4 a b c d) = DIM4
+newtype SArray r (s :: Size) = SArray (Array r (RepaShape s)      Double)
+newtype SBatch r (s :: Size) = SBatch (Array r (RepaShape s:.Int) Double)
 
 softMax :: U.Vector Double -> U.Vector Double
 softMax !xs = U.map (/expSum) exps
@@ -48,3 +43,4 @@ multiSoftMax !ls !xs = U.concat $ sms (cycle ls) xs
                   | otherwise = let (h,t) = U.splitAt l xs
                                  in softMax h : sms ls t
 
+sFromFunction = undefined
