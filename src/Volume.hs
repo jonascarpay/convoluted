@@ -4,10 +4,12 @@
 
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 
-module Volume 
+module Volume
   ( module Volume
   , D, U
   )where
@@ -25,8 +27,11 @@ import qualified Data.Vector.Unboxed as U
 --   be promoted to type classes later to accomodate both batches and
 --   samples, or different precision data types for working on a GPU.
 
-newtype SArray r (s :: Size) = SArray (Array r (RepaShape s)      Double)
-newtype SBatch r (s :: Size) = SBatch (Array r (RepaShape s:.Int) Double)
+newtype SArray r            (s :: SMeasure) = SArray (Array r (ShapeOf s)      Double)
+newtype SBatch r (n :: Nat) (s :: SMeasure) = SBatch (Array r (ShapeOf s:.Int) Double)
+
+instance Show (SBatch r n s) where
+  show _ = "aaa"
 
 softMax :: U.Vector Double -> U.Vector Double
 softMax !xs = U.map (/expSum) exps
@@ -42,5 +47,3 @@ multiSoftMax !ls !xs = U.concat $ sms (cycle ls) xs
                   | U.length xs < l = undefined
                   | otherwise = let (h,t) = U.splitAt l xs
                                  in softMax h : sms ls t
-
-sFromFunction = undefined
