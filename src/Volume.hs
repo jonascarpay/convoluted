@@ -48,7 +48,6 @@ softMax !xs = U.map (/expSum) exps
 multiSoftMax :: [Int] -> U.Vector Double -> U.Vector Double
 multiSoftMax !ls !xs = U.concat $ sms (cycle ls) xs
   where
-    sms []     _  = undefined
     sms (l:ls) xs | U.null xs = []
                   | U.length xs < l = undefined
                   | otherwise = let (h,t) = U.splitAt l xs
@@ -58,4 +57,4 @@ multiSoftMax !ls !xs = U.concat $ sms (cycle ls) xs
 sFromFunction :: forall s. Measure s => (ShapeOf s -> Double) -> SArray D s
 sFromFunction f = SArray $ fromFunction sh f
   where
-    sh = mExtent (undefined :: p s)
+    sh = mExtent (proxy :: p s)

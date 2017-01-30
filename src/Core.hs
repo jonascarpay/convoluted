@@ -30,7 +30,7 @@ instance Measure ZZ where
 instance (KnownNat n, Measure m) => Measure (m ::. n) where
   type Size       (m ::. n) = Size m :* n
   type Prepend n' (m ::. n) = Prepend n' m ::. n
-  mExtent _ = mExtent (undefined :: p m) :. fromInteger (natVal (undefined :: p n))
+  mExtent _ = mExtent (proxy :: p m) :. fromInteger (natVal (proxy :: p n))
 
 type family (a :: SMeasure) :<> (b :: SMeasure) :: SMeasure
 type instance ZZ          :<> q           = q
@@ -40,3 +40,6 @@ type instance (m1 ::. n1) :<> (m2 ::. n2) = ((m1 ::. n1) :<> m2) ::. n2
 type family ShapeOf (s :: SMeasure) :: *
 type instance ShapeOf ZZ = Z
 type instance ShapeOf (m ::. n) = ShapeOf m :. Int
+
+proxy :: p
+proxy = error "Proxy value"
