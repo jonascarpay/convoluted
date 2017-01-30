@@ -43,6 +43,7 @@ instance Measure' n s => Show (SBatch D n s) where
 instance Measure' n s => Show (SBatch U n s) where
   show (SBatch arr) = "Batch " <> show arr
 
+{-# INLINE softMax #-}
 softMax :: U.Vector Double -> U.Vector Double
 softMax xs = U.map (/expSum) exps
   where xMax   = U.maximum xs
@@ -50,6 +51,7 @@ softMax xs = U.map (/expSum) exps
         expSum = U.sum exps
 
 -- | Apply softmax to slices of the vector of lengths indicated by the list
+{-# INLINE multiSoftMax #-}
 multiSoftMax :: [Int] -> U.Vector Double -> U.Vector Double
 multiSoftMax ls xs = U.concat $ sms (cycle ls) xs
   where
@@ -57,6 +59,7 @@ multiSoftMax ls xs = U.concat $ sms (cycle ls) xs
                   | U.length xs < l = undefined
                   | otherwise = let (h,t) = U.splitAt l xs
                                  in softMax h : sms ls t
+    sms [] _ = undefined
 
 {-# INLINE sFromFunction #-}
 sFromFunction :: forall s. Measure s => (ShapeOf s -> Double) -> SArray D s
