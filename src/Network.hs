@@ -14,9 +14,9 @@ import Data.Singletons.TypeLits
 import Control.Monad.Random
 
 data LearningParameters = LearningParameters
-  { learningRate           :: !Double
-  , learningMomentum       :: !Double
-  , learningRegularization :: !Double
+  { learningRate           :: Double
+  , learningMomentum       :: Double
+  , learningRegularization :: Double
   } deriving (Eq, Show)
 
 class Updatable l where
@@ -38,12 +38,12 @@ class Updatable l => Layer l (i :: SMeasure) (o :: SMeasure) where
                -> m (Gradient l, SBatch U n i) -- ^ Gradient on the weights and gradient on the input data
 
 data Network (i :: SMeasure) (ls :: [*]) (o :: Nat) where
-  NNil  :: Layer x i (ZZ ::. o) => !x                       -> Network i '[x]      o
-  NCons :: Layer x i o      => !x -> !(Network o xs no) -> Network i (x ': xs) no
+  NNil  :: Layer x i (ZZ ::. o) => x                       -> Network i '[x]      o
+  NCons :: Layer x i o          => x -> !(Network o xs no) -> Network i (x ': xs) no
 
 data Gradients :: [*] -> * where
-  GNil  :: Updatable x => Gradient x -> Gradients '[x]
-  GCons :: Updatable x => Gradient x -> Gradients xs -> Gradients (x ': xs)
+  GNil  :: Updatable x => (Gradient x)                   -> Gradients (x ': '[])
+  GCons :: Updatable x => (Gradient x) -> (Gradients xs) -> Gradients (x ':  xs)
 
 class CreatableNetwork (i :: SMeasure) (xs :: [*]) (o :: Nat) where
   randomNetwork :: MonadRandom m => m (Network i xs o)

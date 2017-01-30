@@ -27,7 +27,7 @@ instance Updatable (MultiSoftMax cs) where
   createRandom = return MultiSoftMax
 
 instance
-  ( Shape (ShapeOf i)
+  ( Measure i
   , SingI cs
   , SingI (Sum cs)
   , Size i ~ Sum cs
@@ -42,4 +42,4 @@ instance
       c' = fromInteger  $  fromSing (sing :: Sing (Sum cs))
       vec' = SBatch . R.fromUnboxed (Z:.n:.c') $ multiSoftMax cs vec
 
-  runBackwards _ _ _ = undefined
+  runBackwards _ (SBatch y) _ = undefined

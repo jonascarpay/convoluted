@@ -15,6 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
+  default-extensions:  BangPatterns, StrictData
   exposed-modules:     Measure
                      , Volume
                      , Network
