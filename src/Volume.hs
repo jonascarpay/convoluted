@@ -29,14 +29,14 @@ import qualified Data.Vector.Unboxed as U
 --   be promoted to type classes later to accomodate both batches and
 --   samples, or different precision data types for working on a GPU.
 
-newtype SArray r            (s :: SMeasure) = SArray (R.Array r (ShapeOf s)      Double)
+newtype SArray r            (s :: SMeasure) = SArray (R.Array r (ShapeOf s)        Double)
 newtype SBatch r (n :: Nat) (s :: SMeasure) = SBatch (R.Array r (ShapeOf s :. Int) Double)
 
-instance (Shape (ShapeOf s), Show (ShapeOf s)) => Show (SArray D s) where
-  show (SArray arr) = "Static " <> show (computeS arr :: R.Array U (ShapeOf s) Double)
+instance Measure s => Show (SArray D s) where
+  show (SArray arr) = "Static " <> show (computeS arr :: R.Array U (ShapeOf s ) Double)
 
-instance Show (SBatch r n s) where
-  show _ = "aaa"
+instance Measure s => Show (SBatch D n s) where
+  show (SBatch arr) = "Batch "  <> show (computeS arr :: R.Array U (ShapeOf s :. Int) Double)
 
 softMax :: U.Vector Double -> U.Vector Double
 softMax !xs = U.map (/expSum) exps
@@ -48,11 +48,13 @@ softMax !xs = U.map (/expSum) exps
 multiSoftMax :: [Int] -> U.Vector Double -> U.Vector Double
 multiSoftMax !ls !xs = U.concat $ sms (cycle ls) xs
   where
+    sms []     _  = undefined
     sms (l:ls) xs | U.null xs = []
                   | U.length xs < l = undefined
                   | otherwise = let (h,t) = U.splitAt l xs
                                  in softMax h : sms ls t
 
+{-# INLINE sFromFunction #-}
 sFromFunction :: forall s. Measure s => (ShapeOf s -> Double) -> SArray D s
 sFromFunction f = SArray $ fromFunction sh f
   where
