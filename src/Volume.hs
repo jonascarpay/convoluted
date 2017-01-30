@@ -59,3 +59,26 @@ sFromFunction :: forall s. Measure s => (ShapeOf s -> Double) -> SArray D s
 sFromFunction f = SArray $ fromFunction sh f
   where
     sh = mExtent (proxy :: p s)
+
+sZipWith :: (Measure s, Source r1 Double, Source r2 Double)
+         => (Double -> Double -> Double)
+         -> SBatch r1 n s
+         -> SBatch r2 n s
+         -> SBatch D n s
+sZipWith f (SBatch arr1) (SBatch arr2) = SBatch $ R.zipWith f arr1 arr2
+
+sMap :: (Source r Double, Measure s)
+     => (Double -> Double)
+     -> SBatch r n s
+     -> SBatch D n s
+sMap f (SBatch arr) = SBatch $ R.map f arr
+
+sComputeP :: (Monad m, Measure s)
+          => SBatch D n s     -- TODO: Make polymorphic in representations
+          -> m (SBatch U n s) -- TODO: Make polymorphic in representations
+sComputeP (SBatch arr) = SBatch <$> computeP arr
+
+sComputeS :: Measure s
+          => SBatch D n s
+          -> SBatch U n s
+sComputeS (SBatch arr) = SBatch $ computeS arr

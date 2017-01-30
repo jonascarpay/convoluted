@@ -42,4 +42,6 @@ instance
       c' = fromInteger  $  fromSing (sing :: Sing (Sum cs))
       vec' = SBatch . R.fromUnboxed (Z:.n:.c') $ multiSoftMax cs vec
 
-  runBackwards _ (SBatch y) _ = undefined
+  runBackwards _ _ (SBatch y) (SBatch dy) =
+    do dx <- computeP$ R.zipWith (\y l -> (y-l)/1) y dy
+       undefined
