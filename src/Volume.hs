@@ -3,10 +3,13 @@
                 -fllvm -optlo-O3 #-}
 
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE DataKinds #-}
 
 module Volume
@@ -15,10 +18,11 @@ module Volume
   )where
 
 import Core
+import Data.Monoid ((<>))
 import Data.List (foldl')
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num
-import Data.Array.Repa
+import Data.Array.Repa as R
 import qualified Data.Vector.Unboxed as U
 
 -- | Volume and Vector hold data that is transferred betweeen layers.
@@ -27,8 +31,11 @@ import qualified Data.Vector.Unboxed as U
 --   be promoted to type classes later to accomodate both batches and
 --   samples, or different precision data types for working on a GPU.
 
-newtype SArray r            (s :: SMeasure) = SArray (Array r (ShapeOf s)      Double)
-newtype SBatch r (n :: Nat) (s :: SMeasure) = SBatch (Array r (ShapeOf s:.Int) Double)
+newtype SArray r            (s :: SMeasure) = SArray (R.Array r (ShapeOf s)      Double)
+newtype SBatch r (n :: Nat) (s :: SMeasure) = SBatch (R.Array r (ShapeOf s R.:. Int) Double)
+
+instance (Shape (ShapeOf s), Show (ShapeOf s)) => Show (SArray D s) where
+  show (SArray arr) = "Static " <> show (computeS arr :: R.Array U (ShapeOf s) Double)
 
 instance Show (SBatch r n s) where
   show _ = "aaa"
@@ -47,3 +54,8 @@ multiSoftMax !ls !xs = U.concat $ sms (cycle ls) xs
                   | U.length xs < l = undefined
                   | otherwise = let (h,t) = U.splitAt l xs
                                  in softMax h : sms ls t
+
+sFromFunction :: forall s. Measure s => (ShapeOf s -> Double) -> SArray D s
+sFromFunction f = SArray $ fromFunction sh f
+  where
+    sh = mExtent (undefined :: p s)
