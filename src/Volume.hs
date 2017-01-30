@@ -64,6 +64,12 @@ sFromFunction f = SArray $ fromFunction sh f
   where
     sh = mExtent (proxy :: p s)
 
+{-# INLINE sbFromFunction #-}
+sbFromFunction :: forall s n. Measure' n s => (ShapeOf' n s -> Double) -> SBatch D n s
+sbFromFunction f = SBatch $ fromFunction sh f
+  where
+    sh = mExtent (proxy :: p (Prepend n s))
+
 {-# INLINE sZipWith #-}
 sZipWith :: (Measure' n s, Source r1 Double, Source r2 Double)
          => (Double -> Double -> Double)
