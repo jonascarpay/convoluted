@@ -60,6 +60,7 @@ sFromFunction f = SArray $ fromFunction sh f
   where
     sh = mExtent (proxy :: p s)
 
+{-# INLINE sZipWith #-}
 sZipWith :: (Measure s, Source r1 Double, Source r2 Double)
          => (Double -> Double -> Double)
          -> SBatch r1 n s
@@ -67,18 +68,44 @@ sZipWith :: (Measure s, Source r1 Double, Source r2 Double)
          -> SBatch D n s
 sZipWith f (SBatch arr1) (SBatch arr2) = SBatch $ R.zipWith f arr1 arr2
 
+{-# INLINE sMap #-}
 sMap :: (Source r Double, Measure s)
      => (Double -> Double)
      -> SBatch r n s
      -> SBatch D n s
 sMap f (SBatch arr) = SBatch $ R.map f arr
 
+{-# INLINE sComputeP #-}
 sComputeP :: (Monad m, Measure s)
           => SBatch D n s     -- TODO: Make polymorphic in representations
           -> m (SBatch U n s) -- TODO: Make polymorphic in representations
 sComputeP (SBatch arr) = SBatch <$> computeP arr
 
+{-# INLINE sComputeS #-}
 sComputeS :: Measure s
           => SBatch D n s
           -> SBatch U n s
 sComputeS (SBatch arr) = SBatch $ computeS arr
+
+{-# INLINE (%*) #-}
+{-# INLINE (%+) #-}
+{-# INLINE (%-) #-}
+{-# INLINE (%/) #-}
+(%*), (%+), (%-), (%/) :: (Measure s, Source r2 Double, Source r1 Double)
+     => SBatch r1 n s
+     -> SBatch r2 n s
+     -> SBatch D n s
+a %* b = sZipWith (*) a b
+a %/ b = sZipWith (/) a b
+a %+ b = sZipWith (+) a b
+a %- b = sZipWith (-) a b
+
+sSumAllP :: (Source r Double, Measure s, Monad m)
+         => SBatch r t s
+         -> m Double
+sSumAllP (SBatch a) = sumAllP a
+
+sSumAllS :: (Source r Double, Measure s)
+         => SBatch r t s
+         -> Double
+sSumAllS (SBatch a) = sumAllS a
