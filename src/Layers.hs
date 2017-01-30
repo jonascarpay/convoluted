@@ -14,7 +14,6 @@ module Layers where
 
 import Network
 import Volume
-import Core
 import Data.Array.Repa as R
 import Data.Singletons.Prelude
 import Data.Singletons.TypeLits

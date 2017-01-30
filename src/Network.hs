@@ -9,7 +9,6 @@
 
 module Network where
 
-import Core
 import Volume
 import Data.Singletons.TypeLits
 import Control.Monad.Random

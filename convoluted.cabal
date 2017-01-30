@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Core
+  exposed-modules:     Measure
                      , Volume
                      , Network
                      , Layers

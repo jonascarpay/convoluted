@@ -8,7 +8,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 
-module Core where
+module Measure where
 
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num

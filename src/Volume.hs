@@ -14,10 +14,11 @@
 
 module Volume
   ( module Volume
+  , module Measure
   , D, U
   )where
 
-import Core
+import Measure
 import Data.Monoid ((<>))
 import Data.Singletons.TypeLits
 import Data.Array.Repa as R
