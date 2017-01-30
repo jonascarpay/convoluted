@@ -1,6 +1,5 @@
 {-# OPTIONS_GHC -Odph -rtsopts -threaded -fno-liberate-case -fllvm -optlo-O3
-                -funfolding-use-threshold1000 -funfolding-keeness-factor1000
-                -fno-warn-redundant-constraints #-}
+                -funfolding-use-threshold1000 -funfolding-keeness-factor1000 #-}
 
 
 {-# LANGUAGE TypeOperators #-}
@@ -130,10 +129,10 @@ sbFromUnboxed :: forall n s.Measure' n s => U.Vector Double -> SBatch U n s
 sbFromUnboxed vec = SBatch $ fromUnboxed (mExtent (proxy :: p (Prepend n s))) vec
 
 {-# INLINE sVectorMap #-}
-sVectorMap :: Measure' n s
+sVectorMap :: (Measure' n s1, Measure' n s2, Size s1 ~ Size s2)
            => (U.Vector Double -> U.Vector Double)
-           -> SBatch U n s
-           -> SBatch U n s
+           -> SBatch U n s1
+           -> SBatch U n s2
 sVectorMap vf (SBatch arr)
   | U.length vec == U.length vec' = (sbFromUnboxed vec')
   | otherwise                     = error "Vector function did not preserve length"
