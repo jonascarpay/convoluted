@@ -19,9 +19,7 @@ module Volume
 
 import Core
 import Data.Monoid ((<>))
-import Data.List (foldl')
 import Data.Singletons.TypeLits
-import Data.Singletons.Prelude.Num
 import Data.Array.Repa as R
 import qualified Data.Vector.Unboxed as U
 
@@ -32,7 +30,7 @@ import qualified Data.Vector.Unboxed as U
 --   samples, or different precision data types for working on a GPU.
 
 newtype SArray r            (s :: SMeasure) = SArray (R.Array r (ShapeOf s)      Double)
-newtype SBatch r (n :: Nat) (s :: SMeasure) = SBatch (R.Array r (ShapeOf s R.:. Int) Double)
+newtype SBatch r (n :: Nat) (s :: SMeasure) = SBatch (R.Array r (ShapeOf s :. Int) Double)
 
 instance (Shape (ShapeOf s), Show (ShapeOf s)) => Show (SArray D s) where
   show (SArray arr) = "Static " <> show (computeS arr :: R.Array U (ShapeOf s) Double)

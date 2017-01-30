@@ -12,9 +12,6 @@ module Network where
 import Core
 import Volume
 import Data.Singletons.TypeLits
-import Data.Singletons.Prelude
-import Data.Singletons.Prelude.Num
-import Data.Singletons.Prelude.List
 import Control.Monad.Random
 
 data LearningParameters = LearningParameters

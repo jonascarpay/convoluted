@@ -43,4 +43,4 @@ instance
       c' = fromInteger  $  fromSing (sing :: Sing (Sum cs))
       vec' = SBatch . R.fromUnboxed (Z:.n:.c') $ multiSoftMax cs vec
 
-  runBackwards l i o = undefined
+  runBackwards _ _ _ = undefined
