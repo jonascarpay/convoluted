@@ -1,6 +1,7 @@
-{-# OPTIONS_GHC -Odph -rtsopts -threaded -fno-liberate-case
+{-# OPTIONS_GHC -Odph -rtsopts -threaded -fno-liberate-case -fllvm -optlo-O3
                 -funfolding-use-threshold1000 -funfolding-keeness-factor1000
-                -fllvm -optlo-O3 #-}
+                -fno-warn-redundant-constraints #-}
+
 
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -139,3 +140,16 @@ sVectorMap vf (SBatch arr)
   where
     vec = toUnboxed arr
     vec' = vf vec
+
+{-# INLINE sReshape #-}
+sReshape :: forall r n s1 s2.
+          ( Source r Double
+          , Size s1 ~ Size s2 -- GHC says this is redundant, GHC is wrong.
+          , Measure' n s1
+          , Measure' n s2
+          )
+          => SBatch r n s1
+          -> SBatch D n s2
+sReshape (SBatch x) = SBatch $ reshape sh x
+  where
+    sh = mExtent (proxy :: p (Prepend n s2))
