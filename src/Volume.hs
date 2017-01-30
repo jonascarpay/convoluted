@@ -44,14 +44,14 @@ instance Measure' n s => Show (SBatch U n s) where
   show (SBatch arr) = "Batch " <> show arr
 
 softMax :: U.Vector Double -> U.Vector Double
-softMax !xs = U.map (/expSum) exps
+softMax xs = U.map (/expSum) exps
   where xMax   = U.maximum xs
         exps   = U.map (\x -> exp $ x - xMax) xs
         expSum = U.sum exps
 
 -- | Apply softmax to slices of the vector of lengths indicated by the list
 multiSoftMax :: [Int] -> U.Vector Double -> U.Vector Double
-multiSoftMax !ls !xs = U.concat $ sms (cycle ls) xs
+multiSoftMax ls xs = U.concat $ sms (cycle ls) xs
   where
     sms (l:ls) xs | U.null xs = []
                   | U.length xs < l = undefined
@@ -108,19 +108,19 @@ a %- b = sZipWith (-) a b
 sSumAllP :: (Source r Double, Measure' n s, Monad m)
          => SBatch r n s
          -> m Double
-sSumAllP (SBatch !a) = sumAllP a
+sSumAllP (SBatch a) = sumAllP a
 
 {-# INLINE sSumAllS #-}
 sSumAllS :: (Source r Double, Measure' n s)
          => SBatch r n s
          -> Double
-sSumAllS (SBatch !a) = sumAllS a
+sSumAllS (SBatch a) = sumAllS a
 
 -- | Watch out: fromUnboxed, and sbFromUnboxed do not perform length checks.
 --   You are advised to use sMapVector
 {-# INLINE sbFromUnboxed #-}
 sbFromUnboxed :: forall n s.Measure' n s => U.Vector Double -> SBatch U n s
-sbFromUnboxed !vec = SBatch $ fromUnboxed (mExtent (proxy :: p (Prepend n s))) vec
+sbFromUnboxed vec = SBatch $ fromUnboxed (mExtent (proxy :: p (Prepend n s))) vec
 
 {-# INLINE sVectorMap #-}
 sVectorMap :: Measure' n s

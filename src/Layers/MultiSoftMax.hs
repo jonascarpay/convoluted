@@ -32,7 +32,8 @@ instance
       vec' = sVectorMap (multiSoftMax cs) x
 
   {-# INLINE runBackwards #-}
-  runBackwards _ _ (y) (dy) =
-    do dx <- sComputeP$ sZipWith (\y l -> (y-l)/1) y dy
+  runBackwards _ _ (y :: SBatch U n (ZZ ::. i)) dy =
+    do let n = fromInteger $ natVal (proxy :: p n)
+       dx <- sComputeP$ sZipWith (\y l -> (y-l)/n) y dy
        losses <- sSumAllP $ sMap (\x -> if x == 0 then 0 else -log x) $ y %* dy
-       return (MultiSoftMax, dx, losses/1)
+       return (MultiSoftMax, dx, losses/n)

@@ -16,7 +16,7 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   default-extensions:  BangPatterns
-                     , StrictData
+                     , Strict
                      , TypeFamilies
                      , DataKinds
                      , TypeOperators
