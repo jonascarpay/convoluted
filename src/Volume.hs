@@ -5,6 +5,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RankNTypes #-}
@@ -30,14 +31,17 @@ import qualified Data.Vector.Unboxed as U
 --   be promoted to type classes later to accomodate both batches and
 --   samples, or different precision data types for working on a GPU.
 
-newtype SArray r            (s :: SMeasure) = SArray (R.Array r (ShapeOf s)        Double)
-newtype SBatch r (n :: Nat) (s :: SMeasure) = SBatch (R.Array r (ShapeOf s :. Int) Double)
+newtype SArray r            (s :: SMeasure) = SArray (R.Array r (ShapeOf    s) Double)
+newtype SBatch r (n :: Nat) (s :: SMeasure) = SBatch (R.Array r (ShapeOf' n s) Double)
 
 instance Measure s => Show (SArray D s) where
   show (SArray arr) = "Static " <> show (computeS arr :: R.Array U (ShapeOf s ) Double)
 
-instance Measure s => Show (SBatch D n s) where
-  show (SBatch arr) = "Batch "  <> show (computeS arr :: R.Array U (ShapeOf s :. Int) Double)
+instance Measure' n s => Show (SBatch D n s) where
+  show (SBatch arr) = "Delayed Batch "  <> show (computeS arr :: R.Array U (ShapeOf' n s) Double)
+
+instance Measure' n s => Show (SBatch U n s) where
+  show (SBatch arr) = "Batch " <> show arr
 
 softMax :: U.Vector Double -> U.Vector Double
 softMax !xs = U.map (/expSum) exps
@@ -61,7 +65,7 @@ sFromFunction f = SArray $ fromFunction sh f
     sh = mExtent (proxy :: p s)
 
 {-# INLINE sZipWith #-}
-sZipWith :: (Measure s, Source r1 Double, Source r2 Double)
+sZipWith :: (Measure' n s, Source r1 Double, Source r2 Double)
          => (Double -> Double -> Double)
          -> SBatch r1 n s
          -> SBatch r2 n s
@@ -69,20 +73,20 @@ sZipWith :: (Measure s, Source r1 Double, Source r2 Double)
 sZipWith f (SBatch arr1) (SBatch arr2) = SBatch $ R.zipWith f arr1 arr2
 
 {-# INLINE sMap #-}
-sMap :: (Source r Double, Measure s)
+sMap :: (Source r Double, Measure' n s)
      => (Double -> Double)
      -> SBatch r n s
      -> SBatch D n s
 sMap f (SBatch arr) = SBatch $ R.map f arr
 
 {-# INLINE sComputeP #-}
-sComputeP :: (Monad m, Measure s)
+sComputeP :: (Monad m, Measure' n s)
           => SBatch D n s     -- TODO: Make polymorphic in representations
           -> m (SBatch U n s) -- TODO: Make polymorphic in representations
 sComputeP (SBatch arr) = SBatch <$> computeP arr
 
 {-# INLINE sComputeS #-}
-sComputeS :: Measure s
+sComputeS :: Measure' n s
           => SBatch D n s
           -> SBatch U n s
 sComputeS (SBatch arr) = SBatch $ computeS arr
@@ -91,7 +95,7 @@ sComputeS (SBatch arr) = SBatch $ computeS arr
 {-# INLINE (%+) #-}
 {-# INLINE (%-) #-}
 {-# INLINE (%/) #-}
-(%*), (%+), (%-), (%/) :: (Measure s, Source r2 Double, Source r1 Double)
+(%*), (%+), (%-), (%/) :: (Measure' n s, Source r2 Double, Source r1 Double)
      => SBatch r1 n s
      -> SBatch r2 n s
      -> SBatch D n s
@@ -100,12 +104,32 @@ a %/ b = sZipWith (/) a b
 a %+ b = sZipWith (+) a b
 a %- b = sZipWith (-) a b
 
-sSumAllP :: (Source r Double, Measure s, Monad m)
-         => SBatch r t s
+{-# INLINE sSumAllP #-}
+sSumAllP :: (Source r Double, Measure' n s, Monad m)
+         => SBatch r n s
          -> m Double
-sSumAllP (SBatch a) = sumAllP a
+sSumAllP (SBatch !a) = sumAllP a
 
-sSumAllS :: (Source r Double, Measure s)
-         => SBatch r t s
+{-# INLINE sSumAllS #-}
+sSumAllS :: (Source r Double, Measure' n s)
+         => SBatch r n s
          -> Double
-sSumAllS (SBatch a) = sumAllS a
+sSumAllS (SBatch !a) = sumAllS a
+
+-- | Watch out: fromUnboxed, and sbFromUnboxed do not perform length checks.
+--   You are advised to use sMapVector
+{-# INLINE sbFromUnboxed #-}
+sbFromUnboxed :: forall n s.Measure' n s => U.Vector Double -> SBatch U n s
+sbFromUnboxed !vec = SBatch $ fromUnboxed (mExtent (proxy :: p (Prepend n s))) vec
+
+{-# INLINE sVectorMap #-}
+sVectorMap :: Measure' n s
+           => (U.Vector Double -> U.Vector Double)
+           -> SBatch U n s
+           -> SBatch U n s
+sVectorMap vf (SBatch arr)
+  | U.length vec == U.length vec' = (sbFromUnboxed vec')
+  | otherwise                     = error "Vector function did not preserve length"
+  where
+    vec = toUnboxed arr
+    vec' = vf vec

@@ -27,12 +27,12 @@ class Updatable l where
 -- | An instance of the Layer class is a valid layer for a neural network.
 class Updatable l => Layer l (i :: SMeasure) (o :: SMeasure) where
 
-  runForward   :: Monad m
+  runForward   :: (Monad m, KnownNat n)
                => l
                -> SBatch U n i     -- ^ Input data
                -> m (SBatch U n o) -- ^ Output data after passing through this layer
 
-  runBackwards :: Monad m
+  runBackwards :: (Monad m, KnownNat n)
                => l
                -> SBatch U n i -- ^ Input data during forward pass
                -> SBatch U n o -- ^ Output data during forward pass. Note that this could be recomputed, but it seems more efficient to keep a reference around.
