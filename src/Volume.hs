@@ -3,6 +3,7 @@
 
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE BangPatterns #-}
@@ -64,13 +65,13 @@ multiSoftMax ls xs = U.concat $ sms (cycle ls) xs
 sFromFunction :: forall s. Measure s => (ShapeOf s -> Double) -> SArray D s
 sFromFunction f = SArray $ fromFunction sh f
   where
-    sh = mExtent (proxy :: p s)
+    sh = mExtent (Proxy :: Proxy s)
 
 {-# INLINE sbFromFunction #-}
 sbFromFunction :: forall s n. Measure' n s => (ShapeOf' n s -> Double) -> SBatch D n s
 sbFromFunction f = SBatch $ fromFunction sh f
   where
-    sh = mExtent (proxy :: p (Prepend n s))
+    sh = mExtent (Proxy :: Proxy (Prepend n s))
 
 {-# INLINE sZipWith #-}
 sZipWith :: (Measure' n s, Source r1 Double, Source r2 Double)
@@ -128,7 +129,7 @@ sSumAllS (SBatch a) = sumAllS a
 --   You are advised to use sMapVector
 {-# INLINE sbFromUnboxed #-}
 sbFromUnboxed :: forall n s.Measure' n s => U.Vector Double -> SBatch U n s
-sbFromUnboxed vec = SBatch $ fromUnboxed (mExtent (proxy :: p (Prepend n s))) vec
+sbFromUnboxed vec = SBatch $ fromUnboxed (mExtent (Proxy :: Proxy (Prepend n s))) vec
 
 {-# INLINE sVectorMap #-}
 sVectorMap :: (Measure' n s1, Measure' n s2, Size s1 ~ Size s2)
@@ -153,4 +154,9 @@ sReshape :: forall r n s1 s2.
           -> SBatch D n s2
 sReshape (SBatch x) = SBatch $ reshape sh x
   where
-    sh = mExtent (proxy :: p (Prepend n s2))
+    sh = mExtent (Proxy :: Proxy (Prepend n s2))
+
+sRandom :: forall s. Measure s => Int -> Double -> Double -> SArray U s
+sRandom seed min max = SArray $ R.randomishDoubleArray sh min max seed
+  where
+    sh = mExtent (Proxy :: Proxy s)

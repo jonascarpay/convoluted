@@ -14,6 +14,7 @@ module Measure where
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num
 import Data.Array.Repa
+import Data.Proxy
 
 data SMeasure = ZZ | SMeasure ::. Nat
 infixl 3 ::.
@@ -31,7 +32,7 @@ instance Measure ZZ where
 instance (KnownNat n, Measure m) => Measure (m ::. n) where
   type Size       (m ::. n) = Size m :* n
   type Prepend n' (m ::. n) = Prepend n' m ::. n
-  mExtent _ = mExtent (proxy :: p m) :. fromInteger (natVal (proxy :: p n))
+  mExtent _ = mExtent (Proxy :: Proxy m) :. fromInteger (natVal (Proxy :: Proxy n))
 
 type family (a :: SMeasure) :<> (b :: SMeasure) :: SMeasure
 type instance ZZ          :<> q           = q
@@ -44,6 +45,3 @@ type instance ShapeOf (m ::. n) = ShapeOf m :. Int
 
 type ShapeOf' n s = ShapeOf (Prepend n s)
 type Measure' n s = Measure (Prepend n s)
-
-proxy :: p
-proxy = error "Proxy value"

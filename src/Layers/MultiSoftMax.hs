@@ -11,6 +11,7 @@ import Volume
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude (Sing, SingI, fromSing, sing)
 import Data.Singletons.Prelude.List (Sum)
+import Data.Proxy
 
 data MultiSoftMax (cs :: [Nat]) = MultiSoftMax
 
@@ -35,7 +36,7 @@ instance
 
   {-# INLINE runBackwards #-}
   runBackwards _ _ (y :: SBatch U n (ZZ ::. o)) dy =
-    do let n = fromInteger $ natVal (proxy :: p n)
+    do let n = fromInteger $ natVal (Proxy :: Proxy n)
 
        dx <- sComputeP . sReshape $ sZipWith (\y l -> (y-l)/n) y dy
        losses <- sSumAllP $ sMap (\x -> if x == 0 then 0 else -log x) $ y %* dy
