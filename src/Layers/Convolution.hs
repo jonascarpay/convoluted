@@ -16,7 +16,7 @@ data Convolution (n :: Nat) (d :: Nat) (h :: Nat) (w :: Nat)
 instance Updatable (Convolution n d h w) where
   type Gradient (Convolution n d h w) = Convolution n d h w
   applyDelta _ _ _ = undefined
-  createRandom     = undefined
+  seededRandom _   = undefined
 
 instance
   ( oh ~ (ih :- kh :+ 1)

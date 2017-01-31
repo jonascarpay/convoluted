@@ -17,7 +17,7 @@ data MultiSoftMax (cs :: [Nat]) = MultiSoftMax
 instance Updatable (MultiSoftMax cs) where
   type Gradient (MultiSoftMax cs) = (MultiSoftMax cs)
   applyDelta _ _ _ = return (MultiSoftMax, MultiSoftMax)
-  createRandom = return MultiSoftMax
+  seededRandom _ = MultiSoftMax
 
 instance
   ( KnownNat o
