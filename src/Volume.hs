@@ -162,3 +162,15 @@ sRandom :: forall s. Measure s => Int -> Double -> Double -> SArray U s
 sRandom seed min max = SArray $ R.randomishDoubleArray sh min max seed
   where
     sh = mExtent (Proxy :: Proxy s)
+
+{-# INLINE batchToArray #-}
+batchToArray :: SBatch r n s -> SArray r (Prepend n s)
+batchToArray (SBatch arr) = SArray arr
+
+{-# INLINE arrayToBatch #-}
+arrayToBatch :: SArray r (Prepend n s) -> SBatch r n s
+arrayToBatch (SArray arr) = SBatch arr
+
+{-# INLINE batchMap #-}
+batchMap :: (SArray r1 (Prepend n1 s1) -> SArray r2 (Prepend n2 s2)) -> SBatch r1 n1 s1 -> SBatch r2 n2 s2
+batchMap f = arrayToBatch . f . batchToArray
