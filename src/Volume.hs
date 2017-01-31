@@ -22,8 +22,10 @@ module Volume
 import Measure
 import Data.Monoid ((<>))
 import Data.Singletons.TypeLits
-import Data.Array.Repa as R
+import Data.Array.Repa                      as R
+import Data.Array.Repa.Algorithms.Randomish as R
 import qualified Data.Vector.Unboxed as U
+import Data.Proxy
 
 -- | Volume and Vector hold data that is transferred betweeen layers.
 --   For now, these both contain multiple rows of the same data, i.e.
@@ -32,14 +34,14 @@ import qualified Data.Vector.Unboxed as U
 --   samples, or different precision data types for working on a GPU.
 
 newtype SArray r            (s :: SMeasure) = SArray (R.Array r (ShapeOf    s) Double)
-newtype SBatch r (n :: Nat) (s :: SMeasure) = SBatch (R.Array r (ShapeOf' n s) Double)
-
+instance Measure s => Show (SArray U s) where
+  show (SArray arr) = "Batch " <> show arr
 instance Measure s => Show (SArray D s) where
-  show (SArray arr) = "Static " <> show (computeS arr :: R.Array U (ShapeOf s ) Double)
+  show (SArray arr) = "Delayed Static " <> show (computeS arr :: R.Array U (ShapeOf s ) Double)
 
+newtype SBatch r (n :: Nat) (s :: SMeasure) = SBatch (R.Array r (ShapeOf' n s) Double)
 instance Measure' n s => Show (SBatch D n s) where
   show (SBatch arr) = "Delayed Batch "  <> show (computeS arr :: R.Array U (ShapeOf' n s) Double)
-
 instance Measure' n s => Show (SBatch U n s) where
   show (SBatch arr) = "Batch " <> show arr
 

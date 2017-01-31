@@ -5,6 +5,7 @@ module Layers.Convolution where
 
 import Volume
 import Network
+import Data.Array.Repa.Algorithms.Randomish
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num
 
@@ -15,8 +16,8 @@ data Convolution (n :: Nat) (d :: Nat) (h :: Nat) (w :: Nat)
 
 instance Updatable (Convolution n d h w) where
   type Gradient (Convolution n d h w) = Convolution n d h w
-  applyDelta _ _ _ = undefined
-  seededRandom _   = undefined
+  applyDelta _ _ _  = undefined
+  seededRandom seed = undefined
 
 instance
   ( oh ~ (ih :- kh :+ 1)
