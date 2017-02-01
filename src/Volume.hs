@@ -188,3 +188,18 @@ sExpand :: forall sml big r1. (sml `Suffix` big, Source r1 Double)
         -> SArray D  big
 sExpand (SArray src) = SArray $ backpermute sh expand src
   where sh = mExtent (Proxy :: Proxy big)
+
+sBackpermute :: forall s1 s2 r. (Source r Double, Measure s1, Measure s2)
+             => (ShapeOf s2 -> ShapeOf s1)
+             -> SArray r s1
+             -> SArray D s2
+sBackpermute f (SArray arr) = SArray$ backpermute sh f arr
+  where sh = mExtent (Proxy :: Proxy s2)
+
+sRotateW :: forall r n d h w. (Source r Double, KnownNat n, KnownNat d, KnownNat h, KnownNat w)
+         => SArray r (ZZ ::. n ::. d ::. h ::. w)
+         -> SArray D (ZZ ::. d ::. n ::. h ::. w)
+sRotateW arr = sBackpermute invert arr
+  where invert (b:.y:.x)= b:.(h-y-1):.(w-x-1)
+        h = fromInteger$ natVal (Proxy :: Proxy h)
+        w = fromInteger$ natVal (Proxy :: Proxy w)
