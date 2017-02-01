@@ -22,10 +22,12 @@ instance Updatable (MultiSoftMax cs) where
   seededRandom _ = MultiSoftMax
 
 instance
-  ( KnownNat bat, KnownNat i
+  ( KnownNat bat, KnownNat o
   , SingI cs
-  , i ~ Sum cs
-  ) => Layer (MultiSoftMax cs) (ZZ ::. bat ::. i) (ZZ ::. bat ::. i) where
+  , o ~ Sum cs
+  ) => Layer (MultiSoftMax cs) (ZZ ::. bat ::. o) where
+
+  type InputShape (MultiSoftMax cs) (ZZ ::. bat ::. o) = (ZZ ::. bat ::. o)
 
   {-# INLINE runForward #-}
   runForward _ x = return vec'
@@ -34,7 +36,7 @@ instance
       vec' = sVectorMap (multiSoftMax cs) x
 
   {-# INLINE runBackwards #-}
-  runBackwards _ _ (y :: SArray U (ZZ ::. bat ::. i)) dy =
+  runBackwards _ _ (y :: SArray U (ZZ ::. bat ::. o)) dy =
     do let n = fromInteger $ natVal (Proxy :: Proxy bat)
 
        dx <- sComputeP . sReshape $ sZipWith (\y l -> (y-l)/n) y dy

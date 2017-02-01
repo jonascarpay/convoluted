@@ -1,4 +1,4 @@
-{-# oOPTIONS_GHC -Odph -rtsopts -threaded -fno-liberate-case -fllvm -optlo-O3
+{-# OPTIONS_GHC -Odph -rtsopts -threaded -fno-liberate-case -fllvm -optlo-O3
                 -funfolding-use-threshold1000 -funfolding-keeness-factor1000 #-}
 
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -158,18 +158,14 @@ sZeros = SArray . computeS $ fromFunction sh (const 0)
   where
     sh = mExtent (Proxy :: Proxy s)
 
-corr :: ( oh ~ (ih :- kh :+ 1)
-        , ow ~ (iw :- kw :+ 1))
-        => SArray r1 (ZZ ::. id ::. ih ::. iw)
-        -> SArray r2 (ZZ ::. kn ::. kd ::. kh ::. kw)
-        -> SArray D  (ZZ ::. kn ::. oh ::. ow)
+-- | Batched correlation.
+corrB :: ( (kh :+ oh :- 1) ~ ih
+         , (kw :+ ow :- 1) ~ iw)
+        => SArray r1 (ZZ ::. bat ::. id ::. ih ::. iw)
+        -> SArray r2 (ZZ ::. kn  ::. kd ::. kh ::. kw)
+        -> SArray D  (ZZ ::. bat ::. kn ::. oh ::. ow)
 
-corr = undefined
-
-add :: SArray r1 s
-    -> SArray r2 s
-    -> SArray D  s
-add = undefined
+corrB = undefined
 
 class Expand small big where
   expand :: big -> small

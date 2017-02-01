@@ -1,8 +1,8 @@
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE FlexibleInstances #-}
 
 module Layers.Convolution where
@@ -13,35 +13,45 @@ import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num
 import Data.Maybe
 
-data Convolution (n :: Nat) (d :: Nat) (h :: Nat) (w :: Nat) where
-  Convolution :: ( KnownNat n, KnownNat d, KnownNat h, KnownNat w )
-              => { convW :: SArray U (ZZ ::. n ::. d ::. h ::. w)
-                 , convB :: SArray U (ZZ ::. n ::. h ::. w)
-                 , convV :: Maybe (Gradient (Convolution n d h w))
-                 } -> Convolution n d h w
+data Convolution (n :: Nat) (d :: Nat) (kh :: Nat) (kw :: Nat) (oh :: Nat) (ow :: Nat) where
+  Convolution :: ( KnownNat n, KnownNat d, KnownNat kh, KnownNat kw, KnownNat oh, KnownNat ow )
+              => SArray U (ZZ ::. n ::. d ::. kh ::. kw)
+              -> SArray U (ZZ ::. n       ::. oh ::. ow)
+              -> Maybe (Gradient (Convolution n d kh kw oh ow))
+              -> Convolution n d kh kw oh ow
 
-instance Show (Convolution n d h w) where
-  show (Convolution w b _) = unlines ["Convolution", "Weights:", show w, "Biases:", show b]
+instance Show (Convolution n d kh kw oh ow) where
+  show (Convolution w b _) = unlines ["Convolution", "Weights:", show w, "Bias:", show b]
 
-instance ( KnownNat n , KnownNat d, KnownNat h, KnownNat w
-         ) => Updatable (Convolution n d h w) where
+instance ( KnownNat n , KnownNat d, KnownNat kh, KnownNat kw, KnownNat oh, KnownNat ow
+         ) => Updatable (Convolution n d kh kw oh ow) where
 
-  type Gradient (Convolution n d h w) = (SArray U (ZZ ::. n ::. d ::. h ::. w), SArray U (ZZ ::. n ::. h ::. w))
-  seededRandom seed = Convolution (sRandom seed (-1) 1) (sRandom (seed^(9 :: Int)) (-1) 1) Nothing
+  type Gradient (Convolution n d kh kw oh ow) =
+    ( SArray U (ZZ ::. n ::. d ::. kh ::. kw)
+    , SArray U (ZZ ::. n ::. oh ::. ow))
+
+  seededRandom seed =
+    Convolution (sRandom seed (-1) 1) (sRandom (seed*9) (-1) 1) Nothing
 
   applyDelta (LearningParameters α γ λ) (Convolution w b mVel) (dw, db) =
     do let (vw, vb) = fromMaybe (sZeros, sZeros) mVel
-       vw' <- sComputeP$ sZipWith (\v d -> γ*v - α*d) vw dw
-       vb' <- sComputeP$ sZipWith (\v d -> γ*v - α*d) vb db
-       w'  <- sComputeP$ sZipWith (\w v -> w + v - λ * w) w vw'
-       b'  <- sComputeP$ sZipWith (\b v -> b + v - λ * b) b vb'
+
+       vw' <- sComputeP$ sZipWith (\v d -> γ*v - α*d)     vw dw
+       w'  <- sComputeP$ sZipWith (\w v -> w + v - λ * w) w  vw'
+
+       vb' <- sComputeP$ sZipWith (\v d -> γ*v - α*d)     vb db
+       b'  <- sComputeP$ sZipWith (\b v -> b + v - λ * b) b  vb'
+
        return $! Convolution w' b' (Just (vw', vb'))
 
 instance
-  ( KnownNat kh, KnownNat kw, KnownNat n, KnownNat d
-  , oh ~ (ih :- kh :+ 1)
-  , ow ~ (iw :- kw :+ 1)
-  ) => Layer (Convolution n d kh kw) (ZZ ::. bat ::. d ::. ih ::. iw) (ZZ ::. bat ::. n ::. oh ::. ow) where
+  ( KnownNat kh, KnownNat kw, KnownNat n, KnownNat d, KnownNat bat, KnownNat oh, KnownNat ow
+  ) => Layer (Convolution n d kh kw oh ow) (ZZ ::. bat ::. n ::. oh ::. ow) where
 
-    runForward (Convolution _ _ _) _ = undefined
-    runBackwards = undefined
+    type InputShape (Convolution n d kh kw oh ow) (ZZ ::. bat ::. n ::. oh ::. ow) =
+      (ZZ ::. bat ::. d ::. (kh :+ oh :- 1) ::. (kw :+ ow :- 1))
+
+    runForward (Convolution w b _) x =
+      sComputeP $ (x `corrB` w) %+ sExpand b
+
+    runBackwards l x y dy = undefined
