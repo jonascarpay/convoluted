@@ -3,12 +3,10 @@
 
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -30,6 +28,7 @@ import Measure
 import Data.Monoid ((<>))
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num
+import Data.Singletons.Prelude.Ord
 import Data.Array.Repa                      as R
 import Data.Array.Repa.Algorithms.Randomish as R
 import qualified Data.Vector.Unboxed as U
@@ -196,10 +195,39 @@ sBackpermute :: forall s1 s2 r. (Source r Double, Measure s1, Measure s2)
 sBackpermute f (SArray arr) = SArray$ backpermute sh f arr
   where sh = mExtent (Proxy :: Proxy s2)
 
-sRotateW :: forall r n d h w. (Source r Double, KnownNat n, KnownNat d, KnownNat h, KnownNat w)
+sTraverse :: forall s1 s2 r.
+             (Source r Double, Measure s1, Measure s2)
+          => SArray r s1
+          -> ((ShapeOf s1 -> Double) -> ShapeOf s2 -> Double)
+          -> SArray D s2
+sTraverse (SArray arr) f = SArray$ R.traverse arr (const sh) f
+  where sh = mExtent (Proxy :: Proxy s2)
+
+type family Halve (n :: Nat) :: Nat where
+  Halve 0 = 0
+  Halve n = Halve (n :- 2) :+ 1
+
+sRotateW :: forall r n d h w.
+            ( Source r Double , KnownNat n, KnownNat d, KnownNat h, KnownNat w)
          => SArray r (ZZ ::. n ::. d ::. h ::. w)
          -> SArray D (ZZ ::. d ::. n ::. h ::. w)
 sRotateW arr = sBackpermute invert arr
   where invert (b:.y:.x)= b:.(h-y-1):.(w-x-1)
         h = fromInteger$ natVal (Proxy :: Proxy h)
         w = fromInteger$ natVal (Proxy :: Proxy w)
+
+sZeropad :: forall b h w h' w' r.
+            ( Measure (b ::. h ::. w), Measure (b ::. h' ::. w'), Source r Double
+            , KnownNat h, KnownNat h' , KnownNat w, KnownNat w'
+            , KnownNat (Halve (w' :- w)), (h' :- h) ~ (w' :- w)
+            )
+         => SArray r (b ::. h  ::. w )
+         -> SArray D (b ::. h' ::. w')
+sZeropad arr = sTraverse arr padFn
+  where
+    n = fromInteger$ natVal (Proxy :: Proxy (Halve (w' :- w)))
+    h = fromInteger$ natVal (Proxy :: Proxy h)
+    w = fromInteger$ natVal (Proxy :: Proxy w)
+    padFn lookup (b :. y :. x)
+      | y < n || y >= h + n || x < n || x >= w + n = 0
+      | otherwise = lookup (b :. y-n :. x-n)
