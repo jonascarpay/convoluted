@@ -21,7 +21,7 @@ data LearningParameters = LearningParameters
 
 class Updatable l where
   type Gradient l :: *
-  applyDelta      :: Monad m => LearningParameters -> l -> Gradient l -> m (l, Gradient l)
+  applyDelta      :: Monad m => LearningParameters -> l -> Gradient l -> m l
   seededRandom    :: Int -> l
 
 -- | An instance of the Layer class is a valid layer for a neural network.

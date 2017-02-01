@@ -13,6 +13,11 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE DataKinds #-}
 
+-- This module is definitely not as elegant as it could be, with arrays
+-- and batches having separate functions for the same operation. I will
+-- optimise this later when I can keep an eye on the performance impact
+-- of said optimizations
+
 module Volume
   ( module Volume
   , module Measure
@@ -22,6 +27,7 @@ module Volume
 import Measure
 import Data.Monoid ((<>))
 import Data.Singletons.TypeLits
+import Data.Singletons.Prelude.Num
 import Data.Array.Repa                      as R
 import Data.Array.Repa.Algorithms.Randomish as R
 import qualified Data.Vector.Unboxed as U
@@ -75,13 +81,22 @@ sbFromFunction f = SBatch $ fromFunction sh f
   where
     sh = mExtent (Proxy :: Proxy (Prepend n s))
 
-{-# INLINE sZipWith #-}
-sZipWith :: (Measure' n s, Source r1 Double, Source r2 Double)
+{-# INLINE sbZipWith #-}
+sbZipWith :: (Measure' n s, Source r1 Double, Source r2 Double)
          => (Double -> Double -> Double)
          -> SBatch r1 n s
          -> SBatch r2 n s
          -> SBatch D n s
-sZipWith f (SBatch arr1) (SBatch arr2) = SBatch $ R.zipWith f arr1 arr2
+sbZipWith f (SBatch arr1) (SBatch arr2) = SBatch $ R.zipWith f arr1 arr2
+
+{-# INLINE sZipWith #-}
+sZipWith :: (Measure s, Source r1 Double, Source r2 Double)
+         => (Double -> Double -> Double)
+         -> SArray r1 s
+         -> SArray r2 s
+         -> SArray D s
+sZipWith f (SArray arr1) (SArray arr2) = SArray $ R.zipWith f arr1 arr2
+
 
 {-# INLINE sMap #-}
 sMap :: (Source r Double, Measure' n s)
@@ -90,17 +105,30 @@ sMap :: (Source r Double, Measure' n s)
      -> SBatch D n s
 sMap f (SBatch arr) = SBatch $ R.map f arr
 
-{-# INLINE sComputeP #-}
-sComputeP :: (Monad m, Measure' n s)
-          => SBatch D n s     -- TODO: Make polymorphic in representations
-          -> m (SBatch U n s) -- TODO: Make polymorphic in representations
-sComputeP (SBatch arr) = SBatch <$> computeP arr
+{-# INLINE sbComputeP #-}
+sbComputeP :: (Monad m, Measure' n s)
+          => SBatch D n s
+          -> m (SBatch U n s)
+sbComputeP (SBatch arr) = SBatch <$> computeP arr
 
-{-# INLINE sComputeS #-}
-sComputeS :: Measure' n s
+{-# INLINE sbComputeS #-}
+sbComputeS :: Measure' n s
           => SBatch D n s
           -> SBatch U n s
-sComputeS (SBatch arr) = SBatch $ computeS arr
+sbComputeS (SBatch arr) = SBatch $ computeS arr
+
+
+{-# INLINE sComputeP #-}
+sComputeP :: (Monad m, Measure s)
+          => SArray D s
+          -> m (SArray U s)
+sComputeP (SArray arr) = SArray <$> computeP arr
+
+{-# INLINE sComputeS #-}
+sComputeS :: Measure s
+          => SArray D s
+          -> SArray U s
+sComputeS (SArray arr) = SArray $ computeS arr
 
 {-# INLINE (%*) #-}
 {-# INLINE (%+) #-}
@@ -110,10 +138,10 @@ sComputeS (SBatch arr) = SBatch $ computeS arr
      => SBatch r1 n s
      -> SBatch r2 n s
      -> SBatch D n s
-a %* b = sZipWith (*) a b
-a %/ b = sZipWith (/) a b
-a %+ b = sZipWith (+) a b
-a %- b = sZipWith (-) a b
+a %* b = sbZipWith (*) a b
+a %/ b = sbZipWith (/) a b
+a %+ b = sbZipWith (+) a b
+a %- b = sbZipWith (-) a b
 
 {-# INLINE sSumAllP #-}
 sSumAllP :: (Source r Double, Measure' n s, Monad m)
@@ -163,6 +191,11 @@ sRandom seed min max = SArray $ R.randomishDoubleArray sh min max seed
   where
     sh = mExtent (Proxy :: Proxy s)
 
+sZeros :: forall s. Measure s => SArray U s
+sZeros = SArray . computeS $ fromFunction sh (const 0)
+  where
+    sh = mExtent (Proxy :: Proxy s)
+
 {-# INLINE batchToArray #-}
 batchToArray :: SBatch r n s -> SArray r (Prepend n s)
 batchToArray (SBatch arr) = SArray arr
@@ -174,3 +207,16 @@ arrayToBatch (SArray arr) = SBatch arr
 {-# INLINE batchMap #-}
 batchMap :: (SArray r1 (Prepend n1 s1) -> SArray r2 (Prepend n2 s2)) -> SBatch r1 n1 s1 -> SBatch r2 n2 s2
 batchMap f = arrayToBatch . f . batchToArray
+
+corr :: ( oh ~ (ih :- kh :+ 1)
+        , ow ~ (iw :- kw :+ 1))
+        => SBatch r1 n (ZZ ::. id ::. ih ::. iw)
+        -> SArray r2   (ZZ ::. kn ::. kd ::. kh ::. kw)
+        -> SBatch D  n (ZZ ::. kn ::. oh ::. ow)
+
+corr = undefined
+
+add :: SBatch r1 n s
+    -> SArray r2   s
+    -> SBatch D  n s
+add = undefined

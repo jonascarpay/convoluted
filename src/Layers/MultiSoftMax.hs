@@ -17,7 +17,7 @@ data MultiSoftMax (cs :: [Nat]) = MultiSoftMax
 
 instance Updatable (MultiSoftMax cs) where
   type Gradient (MultiSoftMax cs) = (MultiSoftMax cs)
-  applyDelta _ _ _ = return (MultiSoftMax, MultiSoftMax)
+  applyDelta _ _ _ = return MultiSoftMax
   seededRandom _ = MultiSoftMax
 
 instance
@@ -38,6 +38,6 @@ instance
   runBackwards _ _ (y :: SBatch U n (ZZ ::. o)) dy =
     do let n = fromInteger $ natVal (Proxy :: Proxy n)
 
-       dx <- sComputeP . sReshape $ sZipWith (\y l -> (y-l)/n) y dy
+       dx <- sbComputeP . sReshape $ sbZipWith (\y l -> (y-l)/n) y dy
        losses <- sSumAllP $ sMap (\x -> if x == 0 then 0 else -log x) $ y %* dy
        return (MultiSoftMax, dx, losses/n)
