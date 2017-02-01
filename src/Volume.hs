@@ -2,6 +2,7 @@
                 -funfolding-use-threshold1000 -funfolding-keeness-factor1000 #-}
 
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,23 +34,11 @@ import Data.Array.Repa.Algorithms.Randomish as R
 import qualified Data.Vector.Unboxed as U
 import Data.Proxy
 
--- | Volume and Vector hold data that is transferred betweeen layers.
---   For now, these both contain multiple rows of the same data, i.e.
---   are actually a data batch instead of a single sample. These might
---   be promoted to type classes later to accomodate both batches and
---   samples, or different precision data types for working on a GPU.
-
-newtype SArray r            (s :: SMeasure) = SArray (R.Array r (ShapeOf    s) Double)
+newtype SArray r (s :: SMeasure) = SArray (R.Array r (ShapeOf s) Double)
 instance Measure s => Show (SArray U s) where
-  show (SArray arr) = "Batch " <> show arr
+  show (SArray arr) = "Static " <> show arr
 instance Measure s => Show (SArray D s) where
   show (SArray arr) = "Delayed Static " <> show (computeS arr :: R.Array U (ShapeOf s ) Double)
-
-newtype SBatch r (n :: Nat) (s :: SMeasure) = SBatch (R.Array r (ShapeOf' n s) Double)
-instance Measure' n s => Show (SBatch D n s) where
-  show (SBatch arr) = "Delayed Batch "  <> show (computeS arr :: R.Array U (ShapeOf' n s) Double)
-instance Measure' n s => Show (SBatch U n s) where
-  show (SBatch arr) = "Batch " <> show arr
 
 {-# INLINE softMax #-}
 softMax :: U.Vector Double -> U.Vector Double
@@ -75,20 +64,6 @@ sFromFunction f = SArray $ fromFunction sh f
   where
     sh = mExtent (Proxy :: Proxy s)
 
-{-# INLINE sbFromFunction #-}
-sbFromFunction :: forall s n. Measure' n s => (ShapeOf' n s -> Double) -> SBatch D n s
-sbFromFunction f = SBatch $ fromFunction sh f
-  where
-    sh = mExtent (Proxy :: Proxy (Prepend n s))
-
-{-# INLINE sbZipWith #-}
-sbZipWith :: (Measure' n s, Source r1 Double, Source r2 Double)
-         => (Double -> Double -> Double)
-         -> SBatch r1 n s
-         -> SBatch r2 n s
-         -> SBatch D n s
-sbZipWith f (SBatch arr1) (SBatch arr2) = SBatch $ R.zipWith f arr1 arr2
-
 {-# INLINE sZipWith #-}
 sZipWith :: (Measure s, Source r1 Double, Source r2 Double)
          => (Double -> Double -> Double)
@@ -97,26 +72,12 @@ sZipWith :: (Measure s, Source r1 Double, Source r2 Double)
          -> SArray D s
 sZipWith f (SArray arr1) (SArray arr2) = SArray $ R.zipWith f arr1 arr2
 
-
 {-# INLINE sMap #-}
-sMap :: (Source r Double, Measure' n s)
+sMap :: (Source r Double, Measure s)
      => (Double -> Double)
-     -> SBatch r n s
-     -> SBatch D n s
-sMap f (SBatch arr) = SBatch $ R.map f arr
-
-{-# INLINE sbComputeP #-}
-sbComputeP :: (Monad m, Measure' n s)
-          => SBatch D n s
-          -> m (SBatch U n s)
-sbComputeP (SBatch arr) = SBatch <$> computeP arr
-
-{-# INLINE sbComputeS #-}
-sbComputeS :: Measure' n s
-          => SBatch D n s
-          -> SBatch U n s
-sbComputeS (SBatch arr) = SBatch $ computeS arr
-
+     -> SArray r s
+     -> SArray D s
+sMap f (SArray arr) = SArray $ R.map f arr
 
 {-# INLINE sComputeP #-}
 sComputeP :: (Monad m, Measure s)
@@ -134,57 +95,57 @@ sComputeS (SArray arr) = SArray $ computeS arr
 {-# INLINE (%+) #-}
 {-# INLINE (%-) #-}
 {-# INLINE (%/) #-}
-(%*), (%+), (%-), (%/) :: (Measure' n s, Source r2 Double, Source r1 Double)
-     => SBatch r1 n s
-     -> SBatch r2 n s
-     -> SBatch D n s
-a %* b = sbZipWith (*) a b
-a %/ b = sbZipWith (/) a b
-a %+ b = sbZipWith (+) a b
-a %- b = sbZipWith (-) a b
+(%*), (%+), (%-), (%/) :: (Measure s, Source r2 Double, Source r1 Double)
+     => SArray r1 s
+     -> SArray r2 s
+     -> SArray D  s
+a %* b = sZipWith (*) a b
+a %/ b = sZipWith (/) a b
+a %+ b = sZipWith (+) a b
+a %- b = sZipWith (-) a b
 
 {-# INLINE sSumAllP #-}
-sSumAllP :: (Source r Double, Measure' n s, Monad m)
-         => SBatch r n s
+sSumAllP :: (Source r Double, Measure s, Monad m)
+         => SArray r s
          -> m Double
-sSumAllP (SBatch a) = sumAllP a
+sSumAllP (SArray a) = sumAllP a
 
 {-# INLINE sSumAllS #-}
-sSumAllS :: (Source r Double, Measure' n s)
-         => SBatch r n s
+sSumAllS :: (Source r Double, Measure s)
+         => SArray r s
          -> Double
-sSumAllS (SBatch a) = sumAllS a
+sSumAllS (SArray a) = sumAllS a
 
 -- | Watch out: fromUnboxed, and sbFromUnboxed do not perform length checks.
 --   You are advised to use sMapVector
-{-# INLINE sbFromUnboxed #-}
-sbFromUnboxed :: forall n s.Measure' n s => U.Vector Double -> SBatch U n s
-sbFromUnboxed vec = SBatch $ fromUnboxed (mExtent (Proxy :: Proxy (Prepend n s))) vec
+{-# INLINE sFromUnboxed #-}
+sFromUnboxed :: forall s.Measure s => U.Vector Double -> SArray U s
+sFromUnboxed vec = SArray $ fromUnboxed (mExtent (Proxy :: Proxy s)) vec
 
 {-# INLINE sVectorMap #-}
-sVectorMap :: (Measure' n s1, Measure' n s2, Size s1 ~ Size s2)
+sVectorMap :: Measure s
            => (U.Vector Double -> U.Vector Double)
-           -> SBatch U n s1
-           -> SBatch U n s2
-sVectorMap vf (SBatch arr)
-  | U.length vec == U.length vec' = (sbFromUnboxed vec')
+           -> SArray U s
+           -> SArray U s
+sVectorMap vf (SArray arr)
+  | U.length vec == U.length vec' = (sFromUnboxed vec')
   | otherwise                     = error "Vector function did not preserve length"
   where
     vec = toUnboxed arr
     vec' = vf vec
 
 {-# INLINE sReshape #-}
-sReshape :: forall r n s1 s2.
+sReshape :: forall r s1 s2.
           ( Source r Double
           , Size s1 ~ Size s2 -- GHC says this is redundant, GHC is wrong.
-          , Measure' n s1
-          , Measure' n s2
+          , Measure s1
+          , Measure s2
           )
-          => SBatch r n s1
-          -> SBatch D n s2
-sReshape (SBatch x) = SBatch $ reshape sh x
+          => SArray r s1
+          -> SArray D s2
+sReshape (SArray x) = SArray $ reshape sh x
   where
-    sh = mExtent (Proxy :: Proxy (Prepend n s2))
+    sh = mExtent (Proxy :: Proxy s2)
 
 sRandom :: forall s. Measure s => Int -> Double -> Double -> SArray U s
 sRandom seed min max = SArray $ R.randomishDoubleArray sh min max seed
@@ -196,27 +157,15 @@ sZeros = SArray . computeS $ fromFunction sh (const 0)
   where
     sh = mExtent (Proxy :: Proxy s)
 
-{-# INLINE batchToArray #-}
-batchToArray :: SBatch r n s -> SArray r (Prepend n s)
-batchToArray (SBatch arr) = SArray arr
-
-{-# INLINE arrayToBatch #-}
-arrayToBatch :: SArray r (Prepend n s) -> SBatch r n s
-arrayToBatch (SArray arr) = SBatch arr
-
-{-# INLINE batchMap #-}
-batchMap :: (SArray r1 (Prepend n1 s1) -> SArray r2 (Prepend n2 s2)) -> SBatch r1 n1 s1 -> SBatch r2 n2 s2
-batchMap f = arrayToBatch . f . batchToArray
-
 corr :: ( oh ~ (ih :- kh :+ 1)
         , ow ~ (iw :- kw :+ 1))
-        => SBatch r1 n (ZZ ::. id ::. ih ::. iw)
-        -> SArray r2   (ZZ ::. kn ::. kd ::. kh ::. kw)
-        -> SBatch D  n (ZZ ::. kn ::. oh ::. ow)
+        => SArray r1 (ZZ ::. id ::. ih ::. iw)
+        -> SArray r2 (ZZ ::. kn ::. kd ::. kh ::. kw)
+        -> SArray D  (ZZ ::. kn ::. oh ::. ow)
 
 corr = undefined
 
-add :: SBatch r1 n s
-    -> SArray r2   s
-    -> SBatch D  n s
+add :: SArray r1 s
+    -> SArray r2 s
+    -> SArray D  s
 add = undefined

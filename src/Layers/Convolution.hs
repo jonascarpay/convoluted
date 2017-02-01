@@ -41,7 +41,7 @@ instance
   ( KnownNat kh, KnownNat kw, KnownNat n, KnownNat d
   , oh ~ (ih :- kh :+ 1)
   , ow ~ (iw :- kw :+ 1)
-  ) => Layer (Convolution n d kh kw) (ZZ ::. d ::. ih ::. iw) (ZZ ::. n ::. oh ::. ow) where
+  ) => Layer (Convolution n d kh kw) (ZZ ::. bat ::. d ::. ih ::. iw) (ZZ ::. bat ::. n ::. oh ::. ow) where
 
-    runForward (Convolution w b _) x = undefined
+    runForward (Convolution _ _ _) _ = undefined
     runBackwards = undefined

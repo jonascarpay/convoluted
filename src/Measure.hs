@@ -42,6 +42,3 @@ type instance (m1 ::. n1) :<> (m2 ::. n2) = ((m1 ::. n1) :<> m2) ::. n2
 type family ShapeOf (s :: SMeasure) :: *
 type instance ShapeOf ZZ = Z
 type instance ShapeOf (m ::. n) = ShapeOf m :. Int
-
-type ShapeOf' n s = ShapeOf (Prepend n s)
-type Measure' n s = Measure (Prepend n s)

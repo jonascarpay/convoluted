@@ -22,12 +22,10 @@ instance Updatable (MultiSoftMax cs) where
   seededRandom _ = MultiSoftMax
 
 instance
-  ( KnownNat o
+  ( KnownNat bat, KnownNat i
   , SingI cs
-  , Size i ~ Sum cs
-  , Size i ~ o
-  , Measure i
-  ) => Layer (MultiSoftMax cs) i (ZZ ::. o) where
+  , i ~ Sum cs
+  ) => Layer (MultiSoftMax cs) (ZZ ::. bat ::. i) (ZZ ::. bat ::. i) where
 
   {-# INLINE runForward #-}
   runForward _ x = return vec'
@@ -36,9 +34,9 @@ instance
       vec' = sVectorMap (multiSoftMax cs) x
 
   {-# INLINE runBackwards #-}
-  runBackwards _ _ (y :: SBatch U n (ZZ ::. o)) dy =
-    do let n = fromInteger $ natVal (Proxy :: Proxy n)
+  runBackwards _ _ (y :: SArray U (ZZ ::. bat ::. i)) dy =
+    do let n = fromInteger $ natVal (Proxy :: Proxy bat)
 
-       dx <- sbComputeP . sReshape $ sbZipWith (\y l -> (y-l)/n) y dy
+       dx <- sComputeP . sReshape $ sZipWith (\y l -> (y-l)/n) y dy
        losses <- sSumAllP $ sMap (\x -> if x == 0 then 0 else -log x) $ y %* dy
        return (MultiSoftMax, dx, losses/n)

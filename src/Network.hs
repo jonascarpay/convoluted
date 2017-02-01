@@ -27,17 +27,17 @@ class Updatable l where
 -- | An instance of the Layer class is a valid layer for a neural network.
 class Updatable l => Layer l (i :: SMeasure) (o :: SMeasure) where
 
-  runForward   :: (Monad m, KnownNat n, Measure' n i, Measure' n o)
+  runForward   :: (Monad m, Measure i, Measure o)
                => l
-               -> SBatch U n i     -- ^ Input data
-               -> m (SBatch U n o) -- ^ Output data after passing through this layer
+               -> SArray U i     -- ^ Input data
+               -> m (SArray U o) -- ^ Output data after passing through this layer
 
-  runBackwards :: (Monad m, KnownNat n, Measure' n i, Measure' n o)
+  runBackwards :: (Monad m, Measure i, Measure o)
                => l
-               -> SBatch U n i -- ^ Input data during forward pass
-               -> SBatch U n o -- ^ Output data during forward pass. Note that this could be recomputed, but it seems more efficient to keep a reference around.
-               -> SBatch U n o -- ^ Gradient on the output data
-               -> m (Gradient l, SBatch U n i, Double) -- ^ Gradient on the weights, gradient on the input data, loss
+               -> SArray U i -- ^ Input data during forward pass
+               -> SArray U o -- ^ Output data during forward pass. Note that this could be recomputed, but it seems more efficient to keep a reference around.
+               -> SArray U o -- ^ Gradient on the output data
+               -> m (Gradient l, SArray U i, Double) -- ^ Gradient on the weights, gradient on the input data, loss
 
 data Network (i :: SMeasure) (ls :: [*]) (o :: Nat) where
   NNil  :: Layer x i (ZZ ::. o) => x                       -> Network i '[x]      o
