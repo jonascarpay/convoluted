@@ -18,7 +18,6 @@ library
   default-extensions:  BangPatterns
                      , Strict
                      , TypeFamilies
-                     , DataKinds
                      , TypeOperators
   exposed-modules:     Measure
                      , Volume
