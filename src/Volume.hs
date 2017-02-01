@@ -1,6 +1,7 @@
 {-# oOPTIONS_GHC -Odph -rtsopts -threaded -fno-liberate-case -fllvm -optlo-O3
                 -funfolding-use-threshold1000 -funfolding-keeness-factor1000 #-}
 
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -169,3 +170,25 @@ add :: SArray r1 s
     -> SArray r2 s
     -> SArray D  s
 add = undefined
+
+class Expand small big where
+  expand :: big -> small
+
+instance Expand small big => Expand (small :. n) (big :. n) where
+  {-# INLINE expand #-}
+  expand (b :. n) = expand b :. n
+
+instance Expand Z big where
+  {-# INLINE expand #-}
+  expand _ = Z
+
+class (Measure a, Measure b, Expand (ShapeOf a) (ShapeOf b)) => a  `Suffix` b
+instance (KnownNat n, a  `Suffix` b) => (a ::. n) `Suffix` (b ::. n)
+instance Measure b => ZZ `Suffix` b
+
+{-# INLINE sExpand #-}
+sExpand :: forall sml big r1. (sml `Suffix` big, Source r1 Double)
+        => SArray r1 sml
+        -> SArray D  big
+sExpand (SArray src) = SArray $ backpermute sh expand src
+  where sh = mExtent (Proxy :: Proxy big)
