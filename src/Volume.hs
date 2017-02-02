@@ -165,8 +165,8 @@ corrB :: forall bat id ih iw kn kd kh kw oh ow r1 r2.
          , Measure (ZZ ::. bat ::. kn ::. oh ::. ow)
          , (kh :+ oh :- 1) ~ ih
          , (kw :+ ow :- 1) ~ iw)
-        => SArray r1 (ZZ ::. bat ::. id ::. ih ::. iw)
-        -> SArray r2 (ZZ ::. kn  ::. kd ::. kh ::. kw)
+        => SArray r2 (ZZ ::. kn  ::. kd ::. kh ::. kw)
+        -> SArray r1 (ZZ ::. bat ::. id ::. ih ::. iw)
         -> SArray D  (ZZ ::. bat ::. kn ::. oh ::. ow)
 corrB (SArray krns) (SArray imgs) = sFromFunction convF
   where
@@ -251,18 +251,37 @@ sRotateW arr = sBackpermute invert arr
 sZeropad :: forall b h w h' w' r.
             ( Measure (b ::. h ::. w), Measure (b ::. h' ::. w'), Source r Double
             , KnownNat h, KnownNat h' , KnownNat w, KnownNat w'
-            , KnownNat (Halve (w' :- w)), (h' :- h) ~ (w' :- w)
+            , KnownNat (Halve (w' :- w)), KnownNat (Halve (h' :- h))
             )
          => SArray r (b ::. h  ::. w )
          -> SArray D (b ::. h' ::. w')
 sZeropad arr = sTraverse arr padFn
   where
-    n = fromInteger$ natVal (Proxy :: Proxy (Halve (w' :- w)))
+    nw = fromInteger$ natVal (Proxy :: Proxy (Halve (w' :- w)))
+    nh = fromInteger$ natVal (Proxy :: Proxy (Halve (h' :- h)))
     h = fromInteger$ natVal (Proxy :: Proxy h)
     w = fromInteger$ natVal (Proxy :: Proxy w)
     padFn lookup (b :. y :. x)
-      | y < n || y >= h + n || x < n || x >= w + n = 0
-      | otherwise = lookup (b :. y-n :. x-n)
+      | y < nh || y >= h + nh || x < nw || x >= w + nw = 0
+      | otherwise = lookup (b :. y-nh :. x-nw)
 
-fullConvB    = undefined
-sumOuter     = undefined
+fullConvB :: forall bat kn kd kh kw ih iw oh ow r1 r2.
+             ( KnownNat oh, KnownNat kh, KnownNat ih, KnownNat (kh :+ ih :- 1)
+             , KnownNat kw, KnownNat kn, KnownNat kd, KnownNat iw, KnownNat bat
+             , KnownNat (ih :+ 2 :* (kh :+ 1))
+             , KnownNat (iw :+ 2 :* (kw :+ 1))
+             , KnownNat (Halve (iw :+ (2 :* (kw :+ 1)) :- iw))
+             , KnownNat (Halve (ih :+ (2 :* (kh :+ 1)) :- ih))
+             , Source r1 Double
+             , Source r2 Double
+             , oh ~ (kh :+ ih :- 1)
+             , ow ~ (kw :+ iw :- 1)
+             )
+          => SArray r1 (ZZ ::. kn  ::. kd ::. kh ::. kw)
+          -> SArray r2 (ZZ ::. bat ::. kn ::. ih ::. iw)
+          -> SArray D  (ZZ ::. bat ::. kd ::. oh ::. ow)
+fullConvB krns imgs = let krn' = sRotateW krns
+                          img' = (sZeropad imgs :: SArray D (ZZ ::. bat ::. kn ::.    ih :+ 2 :* (kh :+ 1)  ::.  iw :+ 2 :* (kw :+ 1)))
+                       in undefined
+
+sumOuter  = undefined
