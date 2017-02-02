@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -Odph -rtsopts -threaded -fno-liberate-case -fllvm -optlo-O3
+{-# oOPTIONS_GHC -Odph -rtsopts -threaded -fno-liberate-case -fllvm -optlo-O3
                 -funfolding-use-threshold1000 -funfolding-keeness-factor1000 #-}
 
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -28,7 +28,6 @@ import Measure
 import Data.Monoid ((<>))
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num
-import Data.Singletons.Prelude.Ord
 import Data.Array.Repa                      as R
 import Data.Array.Repa.Algorithms.Randomish as R
 import qualified Data.Vector.Unboxed as U
@@ -180,16 +179,16 @@ corrB (SArray krns) (SArray imgs) = sFromFunction convF
         img = extract (ob:.0:.oh:.ow) (unitDim:.id:.kh:.kw) imgs
 
 -- | Batched correlation.
-corrVolumesB :: forall bat id ih iw kd kh kw oh ow r1 r2.
-                ( KnownNat bat, KnownNat kd, KnownNat id, KnownNat kh, KnownNat kw
+corrVolumesB :: forall bat kd kh kw id r1 r2 oh ih ow iw.
+                ( KnownNat bat, KnownNat kd, KnownNat id, KnownNat kh, KnownNat kw, KnownNat oh, KnownNat ow, KnownNat ih, KnownNat iw
                 , Source r1 Double, Source r2 Double
-                , Measure (ZZ ::. bat ::. id ::. ih ::. iw)
                 , Measure (ZZ ::. bat ::. kd ::. kh ::. kw)
+                , Measure (ZZ ::. bat ::. id ::. ih ::. iw)
                 , Measure (ZZ ::. kd  ::. id ::. oh ::. ow)
-                , (kh :+ oh :- 1) ~ ih
-                , (kw :+ ow :- 1) ~ iw)
-                => SArray r1 (ZZ ::. bat ::. id ::. ih ::. iw)
-                -> SArray r2 (ZZ ::. bat ::. kd ::. kh ::. kw)
+                , (ih ~ (oh :+ kh :- 1)), (iw ~ (ow :+ kw :- 1))
+                )
+                => SArray r1 (ZZ ::. bat ::. kd ::. kh ::. kw)
+                -> SArray r2 (ZZ ::. bat ::. id ::. ih ::. iw)
                 -> SArray D  (ZZ ::. kd  ::. id ::. oh ::. ow)
 corrVolumesB (SArray krns) (SArray imgs) = sFromFunction convF
   where
