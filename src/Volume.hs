@@ -158,11 +158,26 @@ sZeros = SArray . computeS $ fromFunction sh (const 0)
     sh = mExtent (Proxy :: Proxy s)
 
 -- | Batched correlation.
-corrB :: ( (kh :+ oh :- 1) ~ ih
+corrB :: forall bat id ih iw kn kd kh kw oh ow r1 r2.
+         ( KnownNat bat, KnownNat kd, KnownNat id, KnownNat kh, KnownNat kw
+         , Source r1 Double, Source r2 Double
+         , Measure (ZZ ::. bat ::. id ::. ih ::. iw)
+         , Measure (ZZ ::. kn  ::. kd ::. kh ::. kw)
+         , Measure (ZZ ::. bat ::. kn ::. oh ::. ow)
+         , (kh :+ oh :- 1) ~ ih
          , (kw :+ ow :- 1) ~ iw)
         => SArray r1 (ZZ ::. bat ::. id ::. ih ::. iw)
         -> SArray r2 (ZZ ::. kn  ::. kd ::. kh ::. kw)
         -> SArray D  (ZZ ::. bat ::. kn ::. oh ::. ow)
+corrB (SArray krns) (SArray img) = sFromFunction convF
+  where
+    kh = fromInteger$ natVal (Proxy :: Proxy kh)
+    kw = fromInteger$ natVal (Proxy :: Proxy kw)
+    id = fromInteger$ natVal (Proxy :: Proxy id)
+    convF (ob:.od:.oh:.ow) = sumAllS $ krn *^ reshape (extent krn) img'
+      where
+        krn  = slice krns (Z:.od:.All:.All:.All)
+        img' = extract (ob:.0:.oh:.ow) (unitDim:.id:.kh:.kw) img
 
 corrB = undefined
 
