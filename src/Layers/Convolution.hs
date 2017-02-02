@@ -54,4 +54,10 @@ instance
     runForward (Convolution w b _) x =
       sComputeP $ (x `corrB` w) %+ sExpand b
 
-    runBackwards l x y dy = undefined
+    runBackwards (Convolution w b _) x y dy =
+      do dx <- w `fullConvB` dy
+         dw <- dy `corrVolumesB` x
+         db <- sComputeP$ sumOuter dy
+         return ((dw, db), dx, 0)
+
+

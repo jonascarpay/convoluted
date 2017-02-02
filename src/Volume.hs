@@ -169,17 +169,35 @@ corrB :: forall bat id ih iw kn kd kh kw oh ow r1 r2.
         => SArray r1 (ZZ ::. bat ::. id ::. ih ::. iw)
         -> SArray r2 (ZZ ::. kn  ::. kd ::. kh ::. kw)
         -> SArray D  (ZZ ::. bat ::. kn ::. oh ::. ow)
-corrB (SArray krns) (SArray img) = sFromFunction convF
+corrB (SArray krns) (SArray imgs) = sFromFunction convF
   where
     kh = fromInteger$ natVal (Proxy :: Proxy kh)
     kw = fromInteger$ natVal (Proxy :: Proxy kw)
     id = fromInteger$ natVal (Proxy :: Proxy id)
-    convF (ob:.od:.oh:.ow) = sumAllS $ krn *^ reshape (extent krn) img'
+    convF (ob:.od:.oh:.ow) = sumAllS $ krn *^ reshape (extent krn) img
       where
         krn  = slice krns (Z:.od:.All:.All:.All)
-        img' = extract (ob:.0:.oh:.ow) (unitDim:.id:.kh:.kw) img
+        img = extract (ob:.0:.oh:.ow) (unitDim:.id:.kh:.kw) imgs
 
-corrB = undefined
+-- | Batched correlation.
+corrVolumesB :: forall bat id ih iw kd kh kw oh ow r1 r2.
+                ( KnownNat bat, KnownNat kd, KnownNat id, KnownNat kh, KnownNat kw
+                , Source r1 Double, Source r2 Double
+                , Measure (ZZ ::. bat ::. id ::. ih ::. iw)
+                , Measure (ZZ ::. bat ::. kd ::. kh ::. kw)
+                , Measure (ZZ ::. kd  ::. id ::. oh ::. ow)
+                , (kh :+ oh :- 1) ~ ih
+                , (kw :+ ow :- 1) ~ iw)
+                => SArray r1 (ZZ ::. bat ::. id ::. ih ::. iw)
+                -> SArray r2 (ZZ ::. bat ::. kd ::. kh ::. kw)
+                -> SArray D  (ZZ ::. kd  ::. id ::. oh ::. ow)
+corrVolumesB (SArray krns) (SArray imgs) = sFromFunction convF
+  where
+    kb :. _ :. kh :. kw = mExtent (Proxy :: Proxy (ZZ ::. bat ::. kd ::. kh ::. kw))
+    convF (Z:.n:.z:.y:.x) = sumAllS $ krn *^ img
+      where
+        krn = extract (zeroDim :. n :. 0 :. 0) (kb :. 1 :. kh :. kw) krns
+        img = extract (zeroDim :. z :. y :. x) (kb :. 1 :. kh :. kw) imgs
 
 class Expand small big where
   expand :: big -> small
@@ -246,3 +264,6 @@ sZeropad arr = sTraverse arr padFn
     padFn lookup (b :. y :. x)
       | y < n || y >= h + n || x < n || x >= w + n = 0
       | otherwise = lookup (b :. y-n :. x-n)
+
+fullConvB    = undefined
+sumOuter     = undefined
