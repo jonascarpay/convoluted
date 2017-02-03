@@ -157,26 +157,26 @@ sZeros = SArray . computeS $ fromFunction sh (const 0)
     sh = mExtent (Proxy :: Proxy s)
 
 -- | Batched correlation.
-corrB :: forall bat id ih iw kn kd kh kw oh ow r1 r2.
-         ( KnownNat bat, KnownNat kd, KnownNat id, KnownNat kh, KnownNat kw
+corrB :: forall bat ih iw kn kd kh kw oh ow r1 r2.
+         ( KnownNat bat, KnownNat kd, KnownNat kh, KnownNat kw
          , Source r1 Double, Source r2 Double
-         , Measure (ZZ ::. bat ::. id ::. ih ::. iw)
          , Measure (ZZ ::. kn  ::. kd ::. kh ::. kw)
+         , Measure (ZZ ::. bat ::. kd ::. ih ::. iw)
          , Measure (ZZ ::. bat ::. kn ::. oh ::. ow)
          , (kh :+ oh :- 1) ~ ih
          , (kw :+ ow :- 1) ~ iw)
         => SArray r2 (ZZ ::. kn  ::. kd ::. kh ::. kw)
-        -> SArray r1 (ZZ ::. bat ::. id ::. ih ::. iw)
+        -> SArray r1 (ZZ ::. bat ::. kd ::. ih ::. iw)
         -> SArray D  (ZZ ::. bat ::. kn ::. oh ::. ow)
 corrB (SArray krns) (SArray imgs) = sFromFunction convF
   where
     kh = fromInteger$ natVal (Proxy :: Proxy kh)
     kw = fromInteger$ natVal (Proxy :: Proxy kw)
-    id = fromInteger$ natVal (Proxy :: Proxy id)
+    kd = fromInteger$ natVal (Proxy :: Proxy kd)
     convF (ob:.od:.oh:.ow) = sumAllS $ krn *^ reshape (extent krn) img
       where
         krn  = slice krns (Z:.od:.All:.All:.All)
-        img = extract (ob:.0:.oh:.ow) (unitDim:.id:.kh:.kw) imgs
+        img = extract (ob:.0:.oh:.ow) (unitDim:.kd:.kh:.kw) imgs
 
 -- | Batched correlation.
 corrVolumesB :: forall bat kd kh kw id r1 r2 oh ih ow iw.
@@ -266,22 +266,27 @@ sZeropad arr = sTraverse arr padFn
       | otherwise = lookup (b :. y-nh :. x-nw)
 
 fullConvB :: forall bat kn kd kh kw ih iw oh ow r1 r2.
-             ( KnownNat oh, KnownNat kh, KnownNat ih, KnownNat (kh :+ ih :- 1)
+             ( KnownNat oh, KnownNat kh, KnownNat ih, KnownNat ow
              , KnownNat kw, KnownNat kn, KnownNat kd, KnownNat iw, KnownNat bat
-             , KnownNat (ih :+ 2 :* (kh :+ 1))
-             , KnownNat (iw :+ 2 :* (kw :+ 1))
-             , KnownNat (Halve (iw :+ (2 :* (kw :+ 1)) :- iw))
-             , KnownNat (Halve (ih :+ (2 :* (kh :+ 1)) :- ih))
+             , KnownNat (ih :+ 2 :* (kh :- 1))
+             , KnownNat (iw :+ 2 :* (kw :- 1))
+             , KnownNat (Halve (iw :+ (2 :* (kw :- 1)) :- iw))
+             , KnownNat (Halve (ih :+ (2 :* (kh :- 1)) :- ih))
              , Source r1 Double
              , Source r2 Double
              , oh ~ (kh :+ ih :- 1)
              , ow ~ (kw :+ iw :- 1)
+             , (kh :+ oh :- 1) ~ (ih :+ 2 :* (kh :- 1) )
+             , (kw :+ ow :- 1) ~ (iw :+ 2 :* (kw :- 1) )
              )
           => SArray r1 (ZZ ::. kn  ::. kd ::. kh ::. kw)
           -> SArray r2 (ZZ ::. bat ::. kn ::. ih ::. iw)
           -> SArray D  (ZZ ::. bat ::. kd ::. oh ::. ow)
 fullConvB krns imgs = let krn' = sRotateW krns
-                          img' = (sZeropad imgs :: SArray D (ZZ ::. bat ::. kn ::.    ih :+ 2 :* (kh :+ 1)  ::.  iw :+ 2 :* (kw :+ 1)))
-                       in undefined
+                          img' = (sZeropad imgs :: SArray D (ZZ ::. bat ::. kn ::. (ih :+ 2 :* (kh :- 1))
+                                                                               ::. (iw :+ 2 :* (kw :- 1)) ))
+                       in krn' `corrB` img'
 
-sumOuter  = undefined
+sumOuter :: ( Measure (ZZ ::. d2 ::. d3 ::. d4), Source r Double )
+         => SArray r (ZZ ::. d1 ::. d2 ::. d3 ::. d4) -> SArray D (ZZ ::. d2 ::. d3 ::. d4)
+sumOuter (SArray arr) = sFromFunction (\ (Z:.z:.y:.x) -> sumAllS$ slice arr (Any:.z:.y:.x))
