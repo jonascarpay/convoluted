@@ -22,6 +22,7 @@ library
   exposed-modules:     Measure
                      , Volume
                      , Network
+                     , Layers
                      , Layers.MultiSoftMax
                      , Layers.Convolution
   default-language:    Haskell2010

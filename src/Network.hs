@@ -39,15 +39,15 @@ class (Measure o, Updatable l) => Layer l (o :: SMeasure) where
                -> SArray U (InputShape l o) -- ^ Input data during forward pass
                -> SArray U o -- ^ Output data during forward pass. Note that this could be recomputed, but it seems more efficient to keep a reference around.
                -> SArray U o -- ^ Gradient on the output data
-               -> m (Gradient l, SArray U (InputShape l o), Double) -- ^ Gradient on the weights, gradient on the input data, loss
+               -> m (Gradient l, SArray U (InputShape l o)) -- ^ Gradient on the weights, gradient on the input data
 
-data Network (i :: SMeasure) (ls :: [*]) (o :: Nat) where
-  NNil  :: Layer x (ZZ ::. o) => x ->                    Network (InputShape x (ZZ ::. o)) (x ': '[]) o
-  NCons :: Layer x o          => x -> Network o xs no -> Network (InputShape x o)          (x ': xs) no
+data Network (i :: SMeasure) (ls :: [*]) (o :: SMeasure) where
+  NNil  :: Layer x lo => x ->                     Network (InputShape x lo) (x ': '[]) lo
+  NCons :: Layer x lo => x -> Network lo xs no -> Network (InputShape x lo) (x ':  xs) no
 
 data Gradients :: [*] -> * where
   GNil  :: Updatable x => (Gradient x)                   -> Gradients (x ': '[])
   GCons :: Updatable x => (Gradient x) -> (Gradients xs) -> Gradients (x ':  xs)
 
-class CreatableNetwork (i :: SMeasure) (xs :: [*]) (o :: Nat) where
+class CreatableNetwork (i :: SMeasure) (xs :: [*]) (o :: SMeasure) where
   randomNetwork :: MonadRandom m => m (Network i xs o)

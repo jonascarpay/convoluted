@@ -13,6 +13,8 @@ import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num
 import Data.Maybe
 
+-- | A convolution layer performs the correlation operation on its forward pass, and a convolution on the
+--   backward pass.
 data Convolution (od :: Nat) (id :: Nat) (kh :: Nat) (kw :: Nat) (oh :: Nat) (ow :: Nat) where
   Convolution :: ( KnownNat od, KnownNat id, KnownNat kh, KnownNat kw, KnownNat oh, KnownNat ow )
               => SArray U (ZZ ::. od ::. id ::. kh ::. kw)
@@ -65,6 +67,6 @@ instance
       do dw <- sComputeP$ dy `corrVolumesB` x
          dx <- sComputeP$ w `fullConvB` dy
          db <- sComputeP$ sumOuter dy
-         return ((dw, db), dx, 0)
+         return ((dw, db), dx)
 
 

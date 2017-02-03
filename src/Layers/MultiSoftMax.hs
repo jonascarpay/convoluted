@@ -41,4 +41,4 @@ instance
 
        dx <- sComputeP . sReshape $ sZipWith (\y l -> (y-l)/n) y dy
        losses <- sSumAllP $ sMap (\x -> if x == 0 then 0 else -log x) $ y %* dy
-       return (MultiSoftMax, dx, losses/n)
+       return (MultiSoftMax, dx)
