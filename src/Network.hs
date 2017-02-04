@@ -24,6 +24,9 @@ class Updatable l where
   randomLayer     :: Int -> l
   zeroLayer       :: l
 
+  randomLayer _    = zeroLayer
+  applyDelta _ _ _ = return zeroLayer
+
 -- | An instance of the Layer class is a valid layer for a neural network.
 class (Measure o, Updatable l) => Layer l (o :: SMeasure) where
 
