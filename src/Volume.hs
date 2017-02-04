@@ -220,6 +220,7 @@ sExpand :: forall sml big r1. (sml `Suffix` big, Source r1 Double)
 sExpand (SArray src) = SArray $ backpermute sh expand src
   where sh = mExtent (Proxy :: Proxy big)
 
+{-# INLINE sBackpermute #-}
 sBackpermute :: forall s1 s2 r. (Source r Double, Measure s1, Measure s2)
              => (ShapeOf s2 -> ShapeOf s1)
              -> SArray r s1
@@ -227,6 +228,7 @@ sBackpermute :: forall s1 s2 r. (Source r Double, Measure s1, Measure s2)
 sBackpermute f (SArray arr) = SArray$ backpermute sh f arr
   where sh = mExtent (Proxy :: Proxy s2)
 
+{-# INLINE sTraverse #-}
 sTraverse :: forall s1 s2 r.
              (Source r Double, Measure s1, Measure s2)
           => SArray r s1
@@ -239,6 +241,7 @@ type family Halve (n :: Nat) :: Nat where
   Halve 0 = 0
   Halve n = Halve (n :- 2) :+ 1
 
+{-# INLINE sRotateW #-}
 sRotateW :: forall r n d h w.
             ( Source r Double , KnownNat n, KnownNat d, KnownNat h, KnownNat w)
          => SArray r (ZZ ::. n ::. d ::. h ::. w)
@@ -248,6 +251,7 @@ sRotateW arr = sBackpermute invert arr
         h = fromInteger$ natVal (Proxy :: Proxy h)
         w = fromInteger$ natVal (Proxy :: Proxy w)
 
+{-# INLINE sZeropad #-}
 sZeropad :: forall b h w h' w' r.
             ( Measure (b ::. h ::. w), Measure (b ::. h' ::. w'), Source r Double
             , KnownNat h, KnownNat h' , KnownNat w, KnownNat w'
@@ -265,6 +269,7 @@ sZeropad arr = sTraverse arr padFn
       | y < nh || y >= h + nh || x < nw || x >= w + nw = 0
       | otherwise = lookup (b :. y-nh :. x-nw)
 
+{-# INLINE fullConvB #-}
 fullConvB :: forall bat kn kd kh kw ih iw oh ow r1 r2.
              ( KnownNat oh, KnownNat kh, KnownNat ih, KnownNat ow
              , KnownNat kw, KnownNat kn, KnownNat kd, KnownNat iw, KnownNat bat
@@ -287,6 +292,7 @@ fullConvB krns imgs = let krn' = sRotateW krns
                                                                                ::. (iw :+ 2 :* (kw :- 1)) ))
                        in krn' `corrB` img'
 
+{-# INLINE sumOuter #-}
 sumOuter :: ( Measure (ZZ ::. d2 ::. d3 ::. d4), Source r Double )
          => SArray r (ZZ ::. d1 ::. d2 ::. d3 ::. d4) -> SArray D (ZZ ::. d2 ::. d3 ::. d4)
 sumOuter (SArray arr) = sFromFunction (\ (Z:.z:.y:.x) -> sumAllS$ slice arr (Any:.z:.y:.x))

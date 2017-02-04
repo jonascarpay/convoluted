@@ -69,4 +69,3 @@ instance
          db <- sComputeP$ sumOuter dy
          return ((dw, db), dx)
 
-
