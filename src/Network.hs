@@ -2,6 +2,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
@@ -57,3 +58,15 @@ data Gradients :: [*] -> * where
 class CreatableNetwork (ls :: [*]) (o :: SMeasure) where
   randomNetwork :: Int -> Network ls o
   zeroNetwork   :: Network ls o
+
+instance OutputLayer l o => CreatableNetwork (l ': '[]) o where
+  zeroNetwork        = NNil zeroLayer
+  randomNetwork seed = NNil (randomLayer seed)
+
+instance ( Layer l (NetInput (Network (l' ': ls) o))
+         , CreatableNetwork (l' ': ls) o
+         ) => CreatableNetwork (l ': l' ': ls) o where
+
+  zeroNetwork = zeroLayer `NCons` zeroNetwork
+  randomNetwork seed = randomLayer seed `NCons` randomNetwork (seed^(9 :: Int))
+
