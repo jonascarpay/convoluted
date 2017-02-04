@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE InstanceSigs #-}
@@ -43,16 +44,4 @@ instance
        -- losses <- sSumAllP $ sMap (\x -> if x == 0 then 0 else -log x) $ y %* dy
        return (MultiSoftMax, dx)
 
-instance
-  ( KnownNat bat, KnownNat o
-  , SingI cs
-  , o ~ Sum cs
-  ) => OutputLayer (MultiSoftMax cs) (ZZ ::. bat ::. o) (SArray U (ZZ ::. bat ::. o)) where
-
-  {-# INLINE activate #-}
-  activate _ x = vec'
-    where
-      cs   = fromInteger <$> fromSing (sing :: Sing cs)
-      vec' = sVectorMap (multiSoftMax cs) x
-
-  dError = undefined
+instance Layer (MultiSoftMax cs) o => OutputLayer (MultiSoftMax cs) o
