@@ -1,12 +1,13 @@
 {-# LANGUAGE DataKinds #-}
 
-module Layers where
+module Layers
+  ( module Layers.MultiSoftMax
+  , module Layers.Flatten
+  , module Layers.Convolution
+  ) where
 
 import Network
 import Volume
 import Layers.MultiSoftMax
-
-type MyNet = Network '[MultiSoftMax '[2,2]] (ZZ ::. 4 ::. 4)
-
-myNet = zeroNetwork :: MyNet
-
+import Layers.Flatten
+import Layers.Convolution

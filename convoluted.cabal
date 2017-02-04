@@ -25,6 +25,7 @@ library
                      , Layers
                      , Layers.MultiSoftMax
                      , Layers.Convolution
+                     , Layers.Flatten
   default-language:    Haskell2010
   ghc-options:         -Wall
                        -fno-warn-name-shadowing
