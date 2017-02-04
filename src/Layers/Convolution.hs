@@ -32,7 +32,9 @@ instance ( KnownNat od , KnownNat id, KnownNat kh, KnownNat kw, KnownNat oh, Kno
     ( SArray U (ZZ ::. od ::. id ::. kh ::. kw)
     , SArray U (ZZ ::. od ::. oh ::. ow))
 
-  seededRandom seed =
+  zeroLayer = Convolution sZeros sZeros Nothing
+
+  randomLayer seed =
     Convolution (sRandom seed (-1) 1) (sRandom (seed*9) (-1) 1) Nothing
 
   applyDelta (LearningParameters α γ λ) (Convolution w b mVel) (dw, db) =

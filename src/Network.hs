@@ -10,9 +10,6 @@
 module Network where
 
 import Volume
-import Data.Singletons.TypeLits
-import Control.Monad.Random
-import Data.Array.Repa (Source)
 
 data LearningParameters = LearningParameters
   { learningRate           :: Double
@@ -23,7 +20,8 @@ data LearningParameters = LearningParameters
 class Updatable l where
   type Gradient l :: *
   applyDelta      :: Monad m => LearningParameters -> l -> Gradient l -> m l
-  seededRandom    :: Int -> l
+  randomLayer     :: Int -> l
+  zeroLayer       :: l
 
 -- | An instance of the Layer class is a valid layer for a neural network.
 class (Measure o, Updatable l) => Layer l (o :: SMeasure) where
@@ -57,4 +55,5 @@ data Gradients :: [*] -> * where
   GCons :: Updatable x => Gradient x -> Gradients xs -> Gradients (x ':  xs)
 
 class CreatableNetwork (ls :: [*]) (o :: SMeasure) where
-  randomNetwork :: MonadRandom m => m (Network ls o)
+  randomNetwork :: Int -> Network ls o
+  zeroNetwork   :: Network ls o
