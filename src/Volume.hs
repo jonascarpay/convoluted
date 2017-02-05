@@ -1,4 +1,4 @@
-{-# oOPTIONS_GHC -Odph -rtsopts -threaded -fno-liberate-case -fllvm -optlo-O3
+{-# OPTIONS_GHC -Odph -rtsopts -threaded -fno-liberate-case -fllvm -optlo-O3
                 -funfolding-use-threshold1000 -funfolding-keeness-factor1000 #-}
 
 {-# LANGUAGE MultiParamTypeClasses #-}

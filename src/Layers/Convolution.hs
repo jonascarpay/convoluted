@@ -51,13 +51,13 @@ instance ( KnownNat od , KnownNat id, KnownNat kh, KnownNat kw, KnownNat oh, Kno
 instance
   ( KnownNat kh, KnownNat kw, KnownNat od, KnownNat id, KnownNat bat
   , KnownNat oh, KnownNat ow, KnownNat ih, KnownNat iw
-  , ih ~ (kh :+ oh :- 1)
-  , iw ~ (kw :+ ow :- 1)
   , KnownNat (kh :+ oh :- 1), KnownNat (kw :+ ow :- 1)
   , KnownNat (oh :+ 2 :* (kh :- 1))
   , KnownNat (ow :+ 2 :* (kw :- 1))
   , KnownNat (Halve ( ow :+ 2 :* (kw :- 1) :- ow ))
   , KnownNat (Halve ( oh :+ 2 :* (kh :- 1) :- oh ))
+  , ih ~ (kh :+ oh :- 1)
+  , iw ~ (kw :+ ow :- 1)
   , (kh :+ (kh :+ oh :- 1) :- 1) ~ (oh :+ (2 :* (kh :- 1)))
   , (kw :+ (kw :+ ow :- 1) :- 1) ~ (ow :+ (2 :* (kw :- 1)))
   ) => Layer (ZZ ::. bat ::. id ::. ih ::. iw)

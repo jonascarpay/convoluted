@@ -22,6 +22,7 @@ library
   exposed-modules:     Measure
                      , Volume
                      , Network
+                     , Runners
                      , Layers
                      , Layers.MultiSoftMax
                      , Layers.Convolution

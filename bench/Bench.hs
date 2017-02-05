@@ -1,23 +1,30 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 
 import Criterion
+import Criterion.Main
 
 import Volume
 import Layers
 import Network
+import Runners
+import Data.Functor.Identity
 
 type NetInput  = (ZZ ::. 1 ::. 3 ::. 32 ::. 32)
 type NetOutput = (ZZ ::. 1 ::. 2)
-type Layers    = '[ Convolution 2 3 32 32 1 1
+type NetLayers = '[ Convolution 2 3 32 32 1 1
                   , Flatten
                   , MultiSoftMax '[2]
                   ]
 
-type MyNet = Network NetInput Layers NetOutput
+type TestNet = Network NetInput NetLayers NetOutput
 
-myNet = zeroNetwork :: MyNet
+myNet :: TestNet
+myNet = randomNetwork 9
 
-myInput = sZeros :: SArray U NetInput
+myInput :: SArray U NetInput
+myInput = sZeros
 
 main :: IO ()
-main = print (sRandom 0 0 1 :: SArray U (ZZ))
+main = defaultMain [ bench "forward" $ whnf (runIdentity . forward myNet) myInput
+                   ]
