@@ -49,7 +49,10 @@ instance ( KnownNat od , KnownNat id, KnownNat kh, KnownNat kw, KnownNat oh, Kno
        return $! Convolution w' b' (Just (vw', vb'))
 
 instance
-  ( KnownNat kh, KnownNat kw, KnownNat od, KnownNat id, KnownNat bat, KnownNat oh, KnownNat ow
+  ( KnownNat kh, KnownNat kw, KnownNat od, KnownNat id, KnownNat bat
+  , KnownNat oh, KnownNat ow, KnownNat ih, KnownNat iw
+  , ih ~ (kh :+ oh :- 1)
+  , iw ~ (kw :+ ow :- 1)
   , KnownNat (kh :+ oh :- 1), KnownNat (kw :+ ow :- 1)
   , KnownNat (oh :+ 2 :* (kh :- 1))
   , KnownNat (ow :+ 2 :* (kw :- 1))
@@ -57,10 +60,9 @@ instance
   , KnownNat (Halve ( oh :+ 2 :* (kh :- 1) :- oh ))
   , (kh :+ (kh :+ oh :- 1) :- 1) ~ (oh :+ (2 :* (kh :- 1)))
   , (kw :+ (kw :+ ow :- 1) :- 1) ~ (ow :+ (2 :* (kw :- 1)))
-  ) => Layer (Convolution od id kh kw oh ow) (ZZ ::. bat ::. od ::. oh ::. ow) where
-
-    type InputShape (Convolution od id kh kw oh ow) (ZZ ::. bat ::. od ::. oh ::. ow) =
-      (ZZ ::. bat ::. id ::. (kh :+ oh :- 1) ::. (kw :+ ow :- 1))
+  ) => Layer (ZZ ::. bat ::. id ::. ih ::. iw)
+             (Convolution od id kh kw oh ow)
+             (ZZ ::. bat ::. od ::. oh ::. ow) where
 
     runForward (Convolution w b _) x =
       sComputeP $ (w `corrB` x) %+ sExpand b
