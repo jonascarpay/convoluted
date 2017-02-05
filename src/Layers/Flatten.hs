@@ -1,26 +1,23 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Layers.Flatten where
 
 import Network
 import Volume
 import Data.Singletons.TypeLits
-import Data.Singletons.Prelude.Num
 
-data Flatten (d :: Nat) (h :: Nat) (w :: Nat) = Flatten
+data Flatten = Flatten
 
-instance Updatable (Flatten d h w) where
-  type Gradient (Flatten d h w) = Flatten d h w
+instance Updatable Flatten where
+  type Gradient Flatten = Flatten
   zeroLayer = Flatten
 
-instance ( KnownNat bat, KnownNat n, KnownNat h, KnownNat w, KnownNat d
-         , (d :* h :* w) ~ n
-         , (bat :* d :* h :* w) ~ (bat :* n) -- 💁
-         ) => Layer (Flatten d h w) (ZZ ::. bat ::. n) where
-
-  type InputShape (Flatten d h w) (ZZ ::. bat ::. n) = ZZ ::. bat ::. d ::. h ::. w
+instance ( KnownNat n, KnownNat bat, KnownNat h, KnownNat d, KnownNat w
+         , Size (ZZ ::. bat ::. h ::. d ::. w) ~ Size (ZZ ::. bat ::. n)
+         ) => Layer (ZZ ::. bat ::. h ::. d ::. w) Flatten (ZZ ::. bat ::. n) where
 
   runForward _ arr = sComputeP $ sReshape arr
 
