@@ -27,9 +27,7 @@ instance
   ( KnownNat bat, KnownNat o
   , SingI cs
   , o ~ Sum cs
-  ) => Layer (MultiSoftMax cs) (ZZ ::. bat ::. o) where
-
-  type InputShape (MultiSoftMax cs) (ZZ ::. bat ::. o) = (ZZ ::. bat ::. o)
+  ) => Layer (ZZ ::. bat ::. o) (MultiSoftMax cs) (ZZ ::. bat ::. o) where
 
   {-# INLINE runForward #-}
   runForward _ x = return vec'
@@ -45,4 +43,4 @@ instance
        -- losses <- sSumAllP $ sMap (\x -> if x == 0 then 0 else -log x) $ y %* dy
        return (MultiSoftMax, dx)
 
-instance Layer (MultiSoftMax cs) o => OutputLayer (MultiSoftMax cs) o
+instance Layer i (MultiSoftMax cs) o => OutputLayer i (MultiSoftMax cs) o
