@@ -11,10 +11,16 @@ import Runners
 import Data.Functor.Identity
 
 type NetInput  = (ZZ ::. 1 ::. 3 ::. 32 ::. 32)
-type NetOutput = (ZZ ::. 1 ::. 2)
-type NetLayers = '[ Convolution 2 3 32 32 1 1
+type NetOutput = (ZZ ::. 1 ::. 16)
+
+type NetLayers = '[ Convolution 1 3 9 9 24 24
+                  , Pool
+                  , ReLU
+                  , Convolution 1 1 5 5 8 8
+                  , Pool
+                  , ReLU
                   , Flatten
-                  , MultiSoftMax '[2]
+                  , MultiSoftMax '[4,4,4,4]
                   ]
 
 type TestNet = Network NetInput NetLayers NetOutput
