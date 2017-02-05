@@ -1,13 +1,9 @@
 {-# LANGUAGE DataKinds #-}
 
 module Layers
-  ( module Layers.MultiSoftMax
-  , module Layers.Flatten
-  , module Layers.Convolution
+  ( module L
   ) where
 
-import Network
-import Volume
-import Layers.MultiSoftMax
-import Layers.Flatten
-import Layers.Convolution
+import Layers.MultiSoftMax as L
+import Layers.Flatten      as L
+import Layers.Convolution  as L

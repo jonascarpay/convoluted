@@ -46,8 +46,8 @@ class (Measure i, Measure o, Updatable l) => Layer (i :: SMeasure) l (o :: SMeas
 class Layer i l o => OutputLayer i l o
 
 data Network (i :: SMeasure) (ls :: [*]) (o :: SMeasure) where
-  NNil  :: OutputLayer i l o => l -> Network i (l ': '[]) o'
-  NCons :: Layer i l o       => l -> Network o ls o' -> Network i (l ':  ls) o'
+  NNil  :: OutputLayer i l o => l                            -> Network i (l ': '[])      o
+  NCons :: Layer i l o       => l -> Network o (ll ': ls) o' -> Network i (l ': ll ': ls) o'
 
 data Gradients :: [*] -> * where
   GNil  :: Updatable x => Gradient x                 -> Gradients (x ': '[])
@@ -57,3 +57,13 @@ class CreatableNetwork (i :: SMeasure) (ls :: [*]) (o :: SMeasure) where
   randomNetwork :: Int -> Network i ls o
   zeroNetwork   :: Network i ls o
 
+instance OutputLayer i l o => CreatableNetwork i (l ': '[]) o where
+  zeroNetwork        = NNil zeroLayer
+  randomNetwork seed = NNil (randomLayer seed)
+
+instance ( Layer i l o
+         , CreatableNetwork o (ll ': ls) o'
+         ) => CreatableNetwork i (l ': ll ': ls) o' where
+
+  zeroNetwork        = zeroLayer `NCons` zeroNetwork
+  randomNetwork seed = randomLayer seed `NCons` randomNetwork (seed^(9::Int))
