@@ -27,6 +27,7 @@ import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num
 import Data.Array.Repa                      as R
 import Data.Array.Repa.Algorithms.Randomish as R
+import Data.Array.Repa.Algorithms.Matrix    as R
 import qualified Data.Vector.Unboxed as U
 import Data.Proxy
 
@@ -293,3 +294,15 @@ fullConvB krns imgs = let krn' = sRotateW krns
 sumOuter :: ( Measure (ZZ ::. d2 ::. d3 ::. d4), Source r Double )
          => SArray r (ZZ ::. d1 ::. d2 ::. d3 ::. d4) -> SArray D (ZZ ::. d2 ::. d3 ::. d4)
 sumOuter (SArray arr) = sFromFunction (\ (Z:.z:.y:.x) -> sumAllS$ slice arr (Any:.z:.y:.x))
+
+smmMultP :: Monad m
+         => SArray U (ZZ ::. r ::. h)
+         -> SArray U (ZZ ::. h ::. c)
+         -> m (SArray U (ZZ ::. r ::. c))
+smmMultP (SArray m1) (SArray m2) = SArray <$> mmultP m1 m2
+
+smmMultS :: SArray U (ZZ ::. r ::. h)
+         -> SArray U (ZZ ::. h ::. c)
+         -> SArray U (ZZ ::. r ::. c)
+smmMultS (SArray m1) (SArray m2) = SArray$ mmultS m1 m2
+
