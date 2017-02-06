@@ -43,4 +43,15 @@ instance
        -- losses <- sSumAllP $ sMap (\x -> if x == 0 then 0 else -log x) $ y %* dy
        return (MultiSoftMax, dx)
 
-instance Layer i (MultiSoftMax cs) o => OutputLayer i (MultiSoftMax cs) o
+instance Layer i (MultiSoftMax cs) o => OutputLayer i (MultiSoftMax cs) o where
+  runOutput l x y =
+    do fx      <- runForward l x
+       dy      <- sComputeP$ fx %- y
+       (_, dx) <- runBackwards l x fx dy
+       return (dx, dataLoss fx y)
+
+   where
+     loss 0 = 0
+     loss x = - log x
+     dataLoss (SArray f) (SArray y) =
+       sumAllS . R.map loss $ R.zipWith (*) f y

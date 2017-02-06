@@ -43,7 +43,12 @@ class (Measure i, Measure o, Updatable l) => Layer (i :: SMeasure) l (o :: SMeas
                -> SArray U o                 -- ^ Gradient on the output data
                -> m (Gradient l, SArray U i) -- ^ Gradient on the weights, gradient on the input data
 
-class Layer i l o => OutputLayer i l o
+class Layer i l o => OutputLayer i l o where
+  runOutput :: Monad m
+            => l
+            -> SArray U i -- ^ Input data
+            -> SArray U o -- ^ Desired output
+            -> m (SArray U i, Double)
 
 data Network (i :: SMeasure) (ls :: [*]) (o :: SMeasure) where
   NNil  :: OutputLayer i l o => l                            -> Network i (l ': '[])      o
