@@ -9,3 +9,4 @@ import Layers.Flatten      as L
 import Layers.Convolution  as L
 import Layers.Pool         as L
 import Layers.ReLU         as L
+import Layers.FC           as L

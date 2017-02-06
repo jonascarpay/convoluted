@@ -26,6 +26,7 @@ import Data.Monoid ((<>))
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num
 import Data.Array.Repa                      as R
+import Data.Array.Repa.Unsafe               as R
 import Data.Array.Repa.Algorithms.Randomish as R
 import Data.Array.Repa.Algorithms.Matrix    as R
 import qualified Data.Vector.Unboxed as U
@@ -290,6 +291,12 @@ fullConvB krns imgs = let krn' = sRotateW krns
                                                                                ::. (iw :+ 2 :* (kw :- 1)) ))
                        in krn' `corrB` img'
 
+sumOuter' :: ( KnownNat bat, KnownNat o, Source r Double )
+          => SArray r (ZZ ::. bat ::. o)
+          -> SArray D (ZZ ::. o)
+sumOuter' (SArray arr) = sFromFunction f
+  where f (Z:.n) = sumAllS$ unsafeSlice arr (Any:.n)
+
 {-# INLINE sumOuter #-}
 sumOuter :: ( Measure (ZZ ::. d2 ::. d3 ::. d4), Source r Double )
          => SArray r (ZZ ::. d1 ::. d2 ::. d3 ::. d4) -> SArray D (ZZ ::. d2 ::. d3 ::. d4)
@@ -306,3 +313,21 @@ smmMultS :: SArray U (ZZ ::. r ::. h)
          -> SArray U (ZZ ::. r ::. c)
 smmMultS (SArray m1) (SArray m2) = SArray$ mmultS m1 m2
 
+smmMult :: ( KnownNat r, KnownNat h, KnownNat c
+           , Source r1 Double, Source r2 Double
+           )
+        => SArray r1 (ZZ ::. r ::. h)
+        -> SArray r2 (ZZ ::. h ::. c)
+        -> SArray D  (ZZ ::. r ::. c)
+smmMult (SArray m1) (SArray m2) = sFromFunction f
+  where f (Z:.r:.c) = sumAllS
+                    $ R.zipWith (*)
+                      (unsafeSlice m1 (Any:.r:.All))
+                      (unsafeSlice m2 (Any:.c))
+
+sTranspose :: ( Source r' Double
+              , KnownNat r
+              , KnownNat c)
+  => SArray r' (ZZ ::. r ::. c)
+  -> SArray D  (ZZ ::. c ::. r)
+sTranspose arr = sBackpermute (\(Z:.y:.x) -> Z:.x:.y) arr
