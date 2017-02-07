@@ -293,7 +293,6 @@ fullConvB :: forall bat kn kd kh kw ih iw oh ow r1 r2.
 fullConvB krns imgs = let krn' = sRotateW krns
                           img' = (sZeropad imgs :: SArray D (ZZ ::. bat ::. kn ::. (ih :+ 2 :* (kh :- 1))
                                                                                ::. (iw :+ 2 :* (kw :- 1)) ))
-
                        in krn' `corrB` img'
 
 

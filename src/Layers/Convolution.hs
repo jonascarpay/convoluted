@@ -37,6 +37,7 @@ instance ( KnownNat od , KnownNat id, KnownNat kh, KnownNat kw, KnownNat oh, Kno
   randomLayer seed =
     Convolution (sRandom seed (-1) 1) (sRandom (seed*9) (-1) 1) Nothing
 
+  {-# INLINE applyDelta #-}
   applyDelta (LearningParameters α γ λ) (Convolution w b mVel) (dw, db) =
     do let (vw, vb) = fromMaybe (sZeros, sZeros) mVel
 
