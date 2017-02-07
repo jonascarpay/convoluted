@@ -85,7 +85,12 @@ sSumAllS (SArray a) = sumAllS a
 --   You are advised to use sMapVector
 {-# INLINE sFromUnboxed #-}
 sFromUnboxed :: forall s.Measure s => U.Vector Double -> SArray U s
-sFromUnboxed vec = SArray $ fromUnboxed (mExtent (Proxy :: Proxy s)) vec
+sFromUnboxed vec
+  | size sh == U.length vec = arr
+  | otherwise               = error "Unboxed vector length did not match target array size"
+  where sh = mExtent (Proxy :: Proxy s)
+        arr = SArray $ fromUnboxed sh vec
+
 
 {-# INLINE sVectorMap #-}
 sVectorMap :: Measure s
