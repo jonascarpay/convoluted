@@ -157,25 +157,27 @@ sZeros = SArray . computeS $ fromFunction sh (const 0)
 
 -- | Batched correlation.
 corrB :: forall bat ih iw kn kd kh kw oh ow r1 r2.
-         ( KnownNat bat, KnownNat kd, KnownNat kh, KnownNat kw
-         , Source r1 Double, Source r2 Double
-         , Measure (ZZ ::. kn  ::. kd ::. kh ::. kw)
-         , Measure (ZZ ::. bat ::. kd ::. ih ::. iw)
-         , Measure (ZZ ::. bat ::. kn ::. oh ::. ow)
-         , (kh :+ oh :- 1) ~ ih
-         , (kw :+ ow :- 1) ~ iw)
-        => SArray r2 (ZZ ::. kn  ::. kd ::. kh ::. kw)
-        -> SArray r1 (ZZ ::. bat ::. kd ::. ih ::. iw)
-        -> SArray D  (ZZ ::. bat ::. kn ::. oh ::. ow)
+  ( KnownNat bat, KnownNat kd, KnownNat kh, KnownNat kw
+  , Source r1 Double, Source r2 Double
+  , Measure (ZZ ::. kn  ::. kd ::. kh ::. kw)
+  , Measure (ZZ ::. bat ::. kd ::. ih ::. iw)
+  , Measure (ZZ ::. bat ::. kn ::. oh ::. ow)
+  , (kh :+ oh :- 1) ~ ih
+  , (kw :+ ow :- 1) ~ iw
+  )
+  => SArray r2 (ZZ ::. kn  ::. kd ::. kh ::. kw)
+  -> SArray r1 (ZZ ::. bat ::. kd ::. ih ::. iw)
+  -> SArray D  (ZZ ::. bat ::. kn ::. oh ::. ow)
 corrB (SArray krns) (SArray imgs) = sFromFunction convF
   where
     kh = fromInteger$ natVal (Proxy :: Proxy kh)
     kw = fromInteger$ natVal (Proxy :: Proxy kw)
     kd = fromInteger$ natVal (Proxy :: Proxy kd)
-    convF (ob:.od:.oh:.ow) = sumAllS $ krn *^ reshape (extent krn) img
+
+    convF (Z:.ob:.oz:.oy:.ox) = sumAllS $ krn *^ img
       where
-        krn  = slice krns (Z:.od:.All:.All:.All)
-        img = extract (ob:.0:.oh:.ow) (unitDim:.kd:.kh:.kw) imgs
+        krn = slice krns (Z:.oz:.All:.All:.All)
+        img = reshape (extent krn) $ extract (Z:.ob:.0:.oy:.ox) (Z:.1:.kd:.kh:.kw) imgs
 
 -- | Batched correlation.
 corrVolumesB :: forall bat kd kh kw id r1 r2 oh ih ow iw.
@@ -246,7 +248,7 @@ sRotateW :: forall r n d h w.
          => SArray r (ZZ ::. n ::. d ::. h ::. w)
          -> SArray D (ZZ ::. d ::. n ::. h ::. w)
 sRotateW arr = sBackpermute invert arr
-  where invert (b:.y:.x)= b:.(h-y-1):.(w-x-1)
+  where invert (Z:.n:.z:.y:.x)= Z:.z:.n:.(h-y-1):.(w-x-1)
         h = fromInteger$ natVal (Proxy :: Proxy h)
         w = fromInteger$ natVal (Proxy :: Proxy w)
 
@@ -289,7 +291,9 @@ fullConvB :: forall bat kn kd kh kw ih iw oh ow r1 r2.
 fullConvB krns imgs = let krn' = sRotateW krns
                           img' = (sZeropad imgs :: SArray D (ZZ ::. bat ::. kn ::. (ih :+ 2 :* (kh :- 1))
                                                                                ::. (iw :+ 2 :* (kw :- 1)) ))
+
                        in krn' `corrB` img'
+
 
 sumOuter' :: ( KnownNat bat, KnownNat o, Source r Double )
           => SArray r (ZZ ::. bat ::. o)

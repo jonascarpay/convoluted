@@ -10,6 +10,7 @@ module Layers.MultiSoftMax where
 
 import Network
 import Volume
+import Data.Array.Repa as R
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude (Sing, SingI, fromSing, sing)
 import Data.Singletons.Prelude.List (Sum)
@@ -40,7 +41,6 @@ instance
     do let n = fromInteger $ natVal (Proxy :: Proxy bat)
 
        dx <- sComputeP . sReshape $ sZipWith (\y l -> (y-l)/n) y dy
-       -- losses <- sSumAllP $ sMap (\x -> if x == 0 then 0 else -log x) $ y %* dy
        return (MultiSoftMax, dx)
 
 instance Layer i (MultiSoftMax cs) o => OutputLayer i (MultiSoftMax cs) o where

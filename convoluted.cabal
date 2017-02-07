@@ -35,7 +35,6 @@ library
                        -fno-warn-name-shadowing
                        -fno-warn-unticked-promoted-constructors
                        -fno-warn-redundant-constraints
-                       -O2
                        -Odph -fno-liberate-case -fllvm -optlo-O3
                        -funfolding-use-threshold1000 -funfolding-keeness-factor1000
   build-depends:       base >= 4.7 && < 5

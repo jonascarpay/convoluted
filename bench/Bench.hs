@@ -11,27 +11,24 @@ import Runners
 import Data.Functor.Identity
 
 type NetInput  = (ZZ ::. 1 ::. 3 ::. 32 ::. 32)
-type NetOutput = (ZZ ::. 1 ::. 4)
+type NetOutput = (ZZ ::. 1 ::. 16)
 
-type NetLayers = '[ Convolution 1 3 9 9 24 24
-                  , Pool
-                  , ReLU
+type NetLayers = '[ Convolution 1 3 21 21 12 12
                   , Convolution 1 1 5 5 8 8
                   , Pool
-                  , ReLU
                   , Flatten
-                  , FC 16 4
-                  , MultiSoftMax '[4]
+                  , MultiSoftMax '[16]
                   ]
 
 type TestNet = Network NetInput NetLayers NetOutput
 
-myNet :: TestNet
-myNet = randomNetwork 9
+testNet :: TestNet
+testNet = randomNetwork 9
 
-myInput :: SArray U NetInput
-myInput = sZeros
+zeroParams = LearningParameters 0 0 0
 
 main :: IO ()
-main = defaultMain [ bench "forward" $ whnf (runIdentity . forward myNet) myInput
+main = defaultMain [
+  --bench "forward"  $ whnf (runIdentity . forward testNet) sZeros,
+  bench "backward" $ whnf (runIdentity . trainOnce testNet zeroParams sZeros) sZeros
                    ]

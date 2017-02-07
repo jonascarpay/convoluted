@@ -9,7 +9,6 @@ module Layers.FC where
 
 import Network
 import Volume
-import Data.Array.Repa
 import Data.Maybe
 import Data.Singletons.TypeLits
 
