@@ -44,6 +44,7 @@ instance
        return (MultiSoftMax, dx)
 
 instance Layer i (MultiSoftMax cs) o => OutputLayer i (MultiSoftMax cs) o where
+  {-# INLINE runOutput #-}
   runOutput l x y =
     do fx      <- runForward l x
        dy      <- sComputeP$ fx %- y

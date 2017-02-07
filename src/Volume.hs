@@ -156,6 +156,7 @@ sZeros = SArray . computeS $ fromFunction sh (const 0)
     sh = mExtent (Proxy :: Proxy s)
 
 -- | Batched correlation.
+{-# INLINE corrB #-}
 corrB :: forall bat ih iw kn kd kh kw oh ow r1 r2.
   ( KnownNat bat, KnownNat kd, KnownNat kh, KnownNat kw
   , Source r1 Double, Source r2 Double
@@ -180,6 +181,7 @@ corrB (SArray krns) (SArray imgs) = sFromFunction convF
         img = reshape (extent krn) $ extract (Z:.ob:.0:.oy:.ox) (Z:.1:.kd:.kh:.kw) imgs
 
 -- | Batched correlation.
+{-# INLINE corrVolumesB #-}
 corrVolumesB :: forall bat kd kh kw id r1 r2 oh ih ow iw.
                 ( KnownNat bat, KnownNat kd, KnownNat id, KnownNat kh, KnownNat kw, KnownNat oh, KnownNat ow, KnownNat ih, KnownNat iw
                 , Source r1 Double, Source r2 Double
@@ -295,6 +297,7 @@ fullConvB krns imgs = let krn' = sRotateW krns
                        in krn' `corrB` img'
 
 
+{-# INLINE sumOuter' #-}
 sumOuter' :: ( KnownNat bat, KnownNat o, Source r Double )
           => SArray r (ZZ ::. bat ::. o)
           -> SArray D (ZZ ::. o)
@@ -306,17 +309,20 @@ sumOuter :: ( Measure (ZZ ::. d2 ::. d3 ::. d4), Source r Double )
          => SArray r (ZZ ::. d1 ::. d2 ::. d3 ::. d4) -> SArray D (ZZ ::. d2 ::. d3 ::. d4)
 sumOuter (SArray arr) = sFromFunction (\ (Z:.z:.y:.x) -> sumAllS$ slice arr (Any:.z:.y:.x))
 
+{-# INLINE smmMultP #-}
 smmMultP :: Monad m
          => SArray U (ZZ ::. r ::. h)
          -> SArray U (ZZ ::. h ::. c)
          -> m (SArray U (ZZ ::. r ::. c))
 smmMultP (SArray m1) (SArray m2) = SArray <$> mmultP m1 m2
 
+{-# INLINE smmMultS #-}
 smmMultS :: SArray U (ZZ ::. r ::. h)
          -> SArray U (ZZ ::. h ::. c)
          -> SArray U (ZZ ::. r ::. c)
 smmMultS (SArray m1) (SArray m2) = SArray$ mmultS m1 m2
 
+{-# INLINE smmMult #-}
 smmMult :: ( KnownNat r, KnownNat h, KnownNat c
            , Source r1 Double, Source r2 Double
            )
@@ -329,6 +335,7 @@ smmMult (SArray m1) (SArray m2) = sFromFunction f
                       (unsafeSlice m1 (Any:.r:.All))
                       (unsafeSlice m2 (Any:.c))
 
+{-# INLINE sTranspose #-}
 sTranspose :: ( Source r' Double
               , KnownNat r
               , KnownNat c)
