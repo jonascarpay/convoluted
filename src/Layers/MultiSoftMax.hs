@@ -9,7 +9,7 @@
 module Layers.MultiSoftMax where
 
 import Network
-import Volume
+import Static
 import Data.Array.Repa as R
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude (Sing, SingI, fromSing, sing)

@@ -18,10 +18,11 @@ library
   default-extensions:  Strict
                      , TypeFamilies
                      , TypeOperators
-  exposed-modules:     Measure
-                     , Volume
-                     , Network
+  exposed-modules:     Network
                      , Runners
+                     , Static
+                     , Static.Array
+                     , Static.Measure
                      , Layers
                      , Layers.MultiSoftMax
                      , Layers.Convolution

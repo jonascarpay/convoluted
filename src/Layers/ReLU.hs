@@ -7,7 +7,7 @@
 module Layers.ReLU where
 
 import Network
-import Volume
+import Static
 import Data.Array.Repa
 
 data ReLU = ReLU

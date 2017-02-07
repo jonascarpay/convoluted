@@ -3,7 +3,7 @@
 module Runners where
 
 import Network
-import Volume
+import Static
 
 forward :: Monad m => Network i ls o -> SArray U i -> m (SArray U o)
 forward (NNil l)       arr = runForward l arr

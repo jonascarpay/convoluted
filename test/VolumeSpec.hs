@@ -2,7 +2,7 @@
 
 module VolumeSpec where
 
-import Volume
+import Static
 import Data.Vector.Unboxed as U
 import Test.QuickCheck
 

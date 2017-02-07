@@ -7,7 +7,7 @@
 module Layers.Pool where
 
 import Network
-import Volume
+import Static
 import Data.Singletons.TypeLits
 import Data.Array.Repa
 

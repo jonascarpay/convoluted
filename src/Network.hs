@@ -11,7 +11,7 @@
 
 module Network where
 
-import Volume
+import Static
 
 data LearningParameters = LearningParameters
   { learningRate           :: Double

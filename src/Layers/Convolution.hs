@@ -7,8 +7,8 @@
 
 module Layers.Convolution where
 
-import Volume
 import Network
+import Static
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num
 import Data.Maybe

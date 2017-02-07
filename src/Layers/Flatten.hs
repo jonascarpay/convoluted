@@ -6,7 +6,7 @@
 module Layers.Flatten where
 
 import Network
-import Volume
+import Static
 import Data.Singletons.TypeLits
 
 data Flatten = Flatten

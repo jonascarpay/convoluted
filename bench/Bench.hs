@@ -5,7 +5,7 @@ import Criterion
 import Criterion.Main
 import Criterion.Types
 
-import Volume
+import Static
 import Layers
 import Network
 import Runners

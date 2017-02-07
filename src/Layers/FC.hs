@@ -8,7 +8,7 @@
 module Layers.FC where
 
 import Network
-import Volume
+import Static
 import Data.Maybe
 import Data.Singletons.TypeLits
 
