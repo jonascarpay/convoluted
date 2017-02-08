@@ -54,10 +54,6 @@ data Network (i :: SMeasure) (ls :: [*]) (o :: SMeasure) where
   NNil  :: OutputLayer i l o => l                            -> Network i (l ': '[])      o
   NCons :: Layer i l o       => l -> Network o (ll ': ls) o' -> Network i (l ': ll ': ls) o'
 
-data Gradients :: [*] -> * where
-  GNil  :: Updatable x => Gradient x                 -> Gradients (x ': '[])
-  GCons :: Updatable x => Gradient x -> Gradients xs -> Gradients (x ':  xs)
-
 class CreatableNetwork (i :: SMeasure) (ls :: [*]) (o :: SMeasure) where
   randomNetwork :: Int -> Network i ls o
   zeroNetwork   :: Network i ls o
