@@ -43,7 +43,8 @@ instance
        dx <- sComputeP . sReshape $ sZipWith (\y l -> (y-l)/n) y dy
        return (MultiSoftMax, dx)
 
-instance Layer i (MultiSoftMax cs) o => OutputLayer i (MultiSoftMax cs) o where
+instance (KnownNat bat, Layer (ZZ ::. bat ::. o) (MultiSoftMax cs) (ZZ ::. bat ::. o))
+  => OutputLayer (ZZ ::. bat ::. o) (MultiSoftMax cs) (ZZ ::. bat ::. o) where
   {-# INLINE runOutput #-}
   runOutput l x y =
     do fx      <- runForward l x
@@ -52,7 +53,8 @@ instance Layer i (MultiSoftMax cs) o => OutputLayer i (MultiSoftMax cs) o where
        return (dx, dataLoss fx y)
 
    where
+     n = fromInteger$ natVal (Proxy :: Proxy bat)
      loss 0 = 0
      loss x = - log x
      dataLoss (SArray f) (SArray y) =
-       sumAllS . R.map loss $ R.zipWith (*) f y
+       (/n) . sumAllS . R.map loss $ R.zipWith (*) f y
