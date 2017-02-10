@@ -15,15 +15,15 @@ trainOnce :: Monad m
           -> LearningParameters
           -> SArray U i -- ^ Input
           -> SArray U o -- ^ Corresponding output
-          -> m (Network i ls o, Double)
-trainOnce net params x y = do (net', loss, _) <- go net x y
-                              return (net', loss)
+          -> m (Network i ls o, Loss)
+trainOnce net0 params x0 y0 = do (net', loss, _) <- go net0 x0 y0
+                                 return (net', loss)
   where
     go :: Monad m
        => Network i ls o
        -> SArray U i
        -> SArray U o
-       -> m ( Network i ls o, Double, SArray U i)
+       -> m ( Network i ls o, Loss, SArray U i)
     go net@(NNil l) x y =
       do (dx, loss) <- runOutput l x y
          return (net, loss, dx)

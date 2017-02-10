@@ -13,6 +13,7 @@ module Network where
 
 import Static
 
+type Loss = (Double, Double)
 data LearningParameters = LearningParameters
   { learningRate           :: Double
   , learningMomentum       :: Double
@@ -48,7 +49,7 @@ class Layer i l o => OutputLayer i l o where
             => l
             -> SArray U i -- ^ Input data
             -> SArray U o -- ^ Desired output
-            -> m (SArray U i, Double)
+            -> m (SArray U i, Loss)
 
 data Network (i :: SMeasure) (ls :: [*]) (o :: SMeasure) where
   NNil  :: OutputLayer i l o => l                            -> Network i (l ': '[])      o

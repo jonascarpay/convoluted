@@ -19,9 +19,14 @@ import qualified Data.Vector.Unboxed as U
 
 newtype SArray r (s :: SMeasure) = SArray (R.Array r (ShapeOf s) Double)
 instance Measure s => Show (SArray U s) where
-  show (SArray arr) = "Static " <> show arr
+  show (SArray arr)
+    | size (extent arr) <= 1000 = "Static " <> show arr
+    | otherwise = "Static Array of size " <> show (extent arr)
+
 instance Measure s => Show (SArray D s) where
-  show (SArray arr) = "Delayed Static " <> show (computeS arr :: R.Array U (ShapeOf s ) Double)
+  show (SArray arr)
+    | size (extent arr) <= 1000 = "Delayed Static " <> show (computeS arr :: R.Array U (ShapeOf s ) Double)
+    | otherwise = "Delayed Static Array of size " <> show (extent arr)
 
 {-# INLINE sFromFunction #-}
 sFromFunction :: forall s. Measure s => (ShapeOf s -> Double) -> SArray D s

@@ -136,10 +136,8 @@ fullConvB :: forall bat kn kd kh kw ih iw oh ow r1 r2.
           -> SArray r2 (ZZ ::. bat ::. kn ::. ih ::. iw)
           -> SArray D  (ZZ ::. bat ::. kd ::. oh ::. ow)
 fullConvB krns imgs = let krn' = sRotateW krns
-                          img' = (sZeropad imgs :: SArray D (ZZ ::. bat ::. kn ::. (ih :+ 2 :* (kh :- 1))
-                                                                               ::. (iw :+ 2 :* (kw :- 1)) ))
+                          img' = sZeropad imgs
                        in krn' `corrB` img'
-
 
 {-# INLINE sumOuter' #-}
 sumOuter' :: ( KnownNat bat, KnownNat o, Source r Double )

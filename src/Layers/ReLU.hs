@@ -8,7 +8,6 @@ module Layers.ReLU where
 
 import Network
 import Static
-import Data.Array.Repa
 
 data ReLU = ReLU
 
@@ -18,10 +17,6 @@ instance Updatable ReLU where
 
 instance Measure s => Layer s ReLU s where
   runForward _ x = sComputeP$ sMap (max 0) x
-  runBackwards _ (SArray x) _ (SArray dy) =
-    do dx <- sComputeP$ sFromFunction f
+  runBackwards _ _ y dy =
+    do dx <- sComputeP$ sZipWith (\x t -> if t > 0 then x else 0) dy y
        return (ReLU, dx)
-     where
-       f pos
-         | x ! pos > 0 = dy ! pos
-         | otherwise   = 0
