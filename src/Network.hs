@@ -56,6 +56,21 @@ data Network (i :: SMeasure) (ls :: [*])  where
   NNil  :: OutputLayer i l => l                            -> Network i (l ': '[])
   NCons :: Layer i l       => l -> Network (LOutput i l) (ll ': ls) -> Network i (l ': ll ': ls)
 
+instance OutputLayer i l => Serialize (Network i (l ': '[])) where
+  put (NNil l) = put l
+  get = do l <- get
+           return$ NNil l
+
+instance ( Layer i l
+         , Serialize (Network (LOutput i l) (ll ': ls))
+         ) => Serialize (Network i (l ': ll ': ls)) where
+  put (l `NCons` ls) = do put l
+                          put ls
+
+  get = do l <- get
+           ls <- get
+           return$ l `NCons` ls
+
 type family NOutput n :: SMeasure where
   NOutput (Network i (l ': '[]))     = LOutput i l
   NOutput (Network i (l ': ll ': ls)) = NOutput (Network (LOutput i l) (ll ': ls))
