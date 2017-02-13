@@ -10,16 +10,23 @@ import Network
 import Static
 import Data.Singletons.TypeLits
 import Data.Array.Repa
+import Data.Serialize
 
 data Pool = Pool
+
+instance Serialize Pool where
+  put _ = return ()
+  get   = return Pool
 
 instance Updatable Pool where
   type Gradient Pool = Pool
   zeroLayer          = Pool
 
-instance ( KnownNat h, KnownNat h', KnownNat w, KnownNat w', KnownNat bat, KnownNat d
-         , h' ~ (Halve h), w' ~ (Halve w)
-         ) => Layer (ZZ ::. bat ::. d ::. h ::. w) Pool (ZZ ::. bat ::. d ::. h' ::. w') where
+instance ( KnownNat h, KnownNat (Halve h), KnownNat w, KnownNat (Halve w), KnownNat bat, KnownNat d
+         ) => Layer (ZZ ::. bat ::. d ::. h ::. w) Pool where
+
+  type LOutput (ZZ ::. bat ::. d ::. h ::. w) Pool =
+    (ZZ ::. bat ::. d ::. Halve h ::. Halve w)
 
   runForward _ x = sComputeP$ sTraverse x f
     where f lx (b:.y:.x) = maximum [ lx$ b :. 2*y   :. 2*x
