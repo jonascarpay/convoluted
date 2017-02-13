@@ -61,8 +61,8 @@ corrB (SArray krns) (SArray imgs) = sFromFunction convF
 
     convF (Z:.ob:.oz:.oy:.ox) = sumAllS $ krn *^ img
       where
-        krn = slice krns (Z:.oz:.All:.All:.All)
-        img = reshape (extent krn) $ extract (Z:.ob:.0:.oy:.ox) (Z:.1:.kd:.kh:.kw) imgs
+        krn = extract (Z:.oz:.0:.0:.0)   (Z:.1:.kd:.kh:.kw) krns
+        img = extract (Z:.ob:.0:.oy:.ox) (Z:.1:.kd:.kh:.kw) imgs
 
 -- | Batched correlation.
 {-# INLINE corrVolumesB #-}

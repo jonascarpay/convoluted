@@ -63,7 +63,7 @@ instance (KnownNat bat, Layer (ZZ ::. bat ::. o) (MultiSoftMax cs))
      loss 0 = 0
      loss x = - log x
      dataLoss (SArray f) (SArray y) =
-       (/n) . sumAllS . R.map loss $ R.zipWith (*) f y
+       (/n) . sumAllS $ R.zipWith (*) (R.map loss f) y
 
      percentCorrect x y = do s <- sSumAllP$ sZipWith (\x y -> if x > 0.5 then y else 0) x y
                              return (s*100/n)
