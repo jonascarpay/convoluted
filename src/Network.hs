@@ -7,7 +7,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FunctionalDependencies #-}
 
 module Network where
 
@@ -31,15 +30,15 @@ class Serialize l => Updatable l where
   applyDelta _ _ _ = return zeroLayer
 
 -- | An instance of the Layer class is a valid layer for a neural network.
-class (Measure i, Updatable l) => Layer (i :: SMeasure) l where
+class (Measure i, Updatable l, Measure (LOutput i l)) => Layer (i :: SMeasure) l where
   type LOutput i l :: SMeasure
 
-  runForward   :: (Monad m, Measure i, Measure (LOutput i l))
+  runForward   :: (Monad m, Measure i)
                => l
                -> SArray U i     -- ^ Input data
                -> m (SArray U (LOutput i l)) -- ^ Output data after passing through this layer
 
-  runBackwards :: (Monad m, Measure i, Measure (LOutput i l))
+  runBackwards :: (Monad m, Measure i)
                => l
                -> SArray U i                 -- ^ Input data during forward pass
                -> SArray U (LOutput i l)                 -- ^ Output data during forward pass. Note that this could be recomputed, but it seems more efficient to keep a reference around.
