@@ -57,6 +57,10 @@ data Network (i :: SMeasure) (ls :: [*])  where
   NNil  :: OutputLayer i l => l                            -> Network i (l ': '[])
   NCons :: Layer i l       => l -> Network (LOutput i l) (ll ': ls) -> Network i (l ': ll ': ls)
 
+type family NOutput n :: SMeasure where
+  NOutput (Network i (l ': '[]))     = LOutput i l
+  NOutput (Network i (l ': ll ': ls)) = NOutput (Network (LOutput i l) (ll ': ls))
+
 class CreatableNetwork (i :: SMeasure) (ls :: [*]) where
   randomNetwork :: Int -> Network i ls
   zeroNetwork   :: Network i ls
