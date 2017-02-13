@@ -8,17 +8,24 @@ module Layers.Flatten where
 import Network
 import Static
 import Data.Singletons.TypeLits
+import Data.Singletons.Prelude.Num
+import Data.Serialize
 
 data Flatten = Flatten
+
+instance Serialize Flatten where
+  put _ = return ()
+  get   = return Flatten
 
 instance Updatable Flatten where
   type Gradient Flatten = Flatten
   zeroLayer = Flatten
 
-instance ( KnownNat n, KnownNat bat, KnownNat h, KnownNat d, KnownNat w
-         , Size (ZZ ::. bat ::. h ::. d ::. w) ~ Size (ZZ ::. bat ::. n)
-         ) => Layer (ZZ ::. bat ::. h ::. d ::. w) Flatten (ZZ ::. bat ::. n) where
+instance ( KnownNat (h :* d :* w), KnownNat bat, KnownNat h, KnownNat d, KnownNat w
+         , (bat :* h :* d :* w) ~ (bat :* (h :* d :* w))
+         ) => Layer (ZZ ::. bat ::. h ::. d ::. w) Flatten where
 
+  type LOutput (ZZ ::. bat ::. h ::. d ::. w) Flatten = ZZ ::. bat ::. (h :* d :* w)
   runForward _ arr = sComputeP $ sReshape arr
 
   runBackwards _ _ _ dy =
