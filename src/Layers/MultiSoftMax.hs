@@ -15,8 +15,13 @@ import Data.Singletons.TypeLits
 import Data.Singletons.Prelude (Sing, SingI, fromSing, sing)
 import Data.Singletons.Prelude.List (Sum)
 import Data.Proxy
+import Data.Serialize
 
 data MultiSoftMax (cs :: [Nat]) = MultiSoftMax
+
+instance Serialize (MultiSoftMax cs) where
+  put _ = return ()
+  get   = return MultiSoftMax
 
 instance Updatable (MultiSoftMax cs) where
   type Gradient (MultiSoftMax cs) = (MultiSoftMax cs)
@@ -28,8 +33,9 @@ instance
   ( KnownNat bat, KnownNat o
   , SingI cs
   , o ~ Sum cs
-  ) => Layer (ZZ ::. bat ::. o) (MultiSoftMax cs) (ZZ ::. bat ::. o) where
+  ) => Layer (ZZ ::. bat ::. o) (MultiSoftMax cs) where
 
+  type LOutput (ZZ ::. bat ::. o) (MultiSoftMax cs) = (ZZ ::. bat ::. o)
   {-# INLINE runForward #-}
   runForward _ x = return vec'
     where
@@ -43,8 +49,8 @@ instance
        dx <- sComputeP$ sZipWith (\y l -> (y-l)/n) y dy
        return (MultiSoftMax, dx)
 
-instance (KnownNat bat, Layer (ZZ ::. bat ::. o) (MultiSoftMax cs) (ZZ ::. bat ::. o))
-  => OutputLayer (ZZ ::. bat ::. o) (MultiSoftMax cs) (ZZ ::. bat ::. o) where
+instance (KnownNat bat, Layer (ZZ ::. bat ::. o) (MultiSoftMax cs))
+  => OutputLayer (ZZ ::. bat ::. o) (MultiSoftMax cs) where
   {-# INLINE runOutput #-}
   runOutput l x y =
     do fx      <- runForward l x
