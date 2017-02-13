@@ -23,9 +23,14 @@ data Convolution (od :: Nat) (id :: Nat) (kh :: Nat) (kw :: Nat) (oh :: Nat) (ow
               -> Maybe (Gradient (Convolution od id kh kw oh ow))
               -> Convolution od id kh kw oh ow
 
-instance Serialize (Convolution od id kh kw oh ow) where
-  put = undefined
-  get = undefined
+instance ( KnownNat od, KnownNat oh, KnownNat ow, KnownNat id, KnownNat kh, KnownNat kw
+         ) => Serialize (Convolution od id kh kw oh ow) where
+  put (Convolution w b _) = do put w
+                               put b
+
+  get = do w <- get
+           b <- get
+           return$ Convolution w b Nothing
 
 instance Show (Convolution od id kh kw oh ow) where
   show (Convolution w b _) = unlines ["Convolution", "Weights:", show w, "Bias:", show b]
