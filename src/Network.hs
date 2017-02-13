@@ -12,6 +12,7 @@
 module Network where
 
 import Static
+import Data.Serialize
 
 type Loss = (Double, Double)
 data LearningParameters = LearningParameters
@@ -20,7 +21,7 @@ data LearningParameters = LearningParameters
   , learningRegularization :: Double
   } deriving (Eq, Show)
 
-class Updatable l where
+class Serialize l => Updatable l where
   type Gradient l :: *
   applyDelta      :: Monad m => LearningParameters -> l -> Gradient l -> m l
   randomLayer     :: Int -> l
@@ -30,42 +31,43 @@ class Updatable l where
   applyDelta _ _ _ = return zeroLayer
 
 -- | An instance of the Layer class is a valid layer for a neural network.
-class (Measure i, Measure o, Updatable l) => Layer (i :: SMeasure) l (o :: SMeasure) | i l -> o where
+class (Measure i, Updatable l) => Layer (i :: SMeasure) l where
+  type LOutput i l :: SMeasure
 
-  runForward   :: (Monad m, Measure i, Measure o)
+  runForward   :: (Monad m, Measure i, Measure (LOutput i l))
                => l
                -> SArray U i     -- ^ Input data
-               -> m (SArray U o) -- ^ Output data after passing through this layer
+               -> m (SArray U (LOutput i l)) -- ^ Output data after passing through this layer
 
-  runBackwards :: (Monad m, Measure i, Measure o)
+  runBackwards :: (Monad m, Measure i, Measure (LOutput i l))
                => l
                -> SArray U i                 -- ^ Input data during forward pass
-               -> SArray U o                 -- ^ Output data during forward pass. Note that this could be recomputed, but it seems more efficient to keep a reference around.
-               -> SArray U o                 -- ^ Gradient on the output data
+               -> SArray U (LOutput i l)                 -- ^ Output data during forward pass. Note that this could be recomputed, but it seems more efficient to keep a reference around.
+               -> SArray U (LOutput i l)                 -- ^ Gradient on the output data
                -> m (Gradient l, SArray U i) -- ^ Gradient on the weights, gradient on the input data
 
-class Layer i l o => OutputLayer i l o where
+class Layer i l => OutputLayer i l where
   runOutput :: Monad m
             => l
             -> SArray U i -- ^ Input data
-            -> SArray U o -- ^ Desired output
+            -> SArray U (LOutput i l) -- ^ Desired output
             -> m (SArray U i, Loss)
 
-data Network (i :: SMeasure) (ls :: [*]) (o :: SMeasure) where
-  NNil  :: OutputLayer i l o => l                            -> Network i (l ': '[])      o
-  NCons :: Layer i l o       => l -> Network o (ll ': ls) o' -> Network i (l ': ll ': ls) o'
+data Network (i :: SMeasure) (ls :: [*])  where
+  NNil  :: OutputLayer i l => l                            -> Network i (l ': '[])
+  NCons :: Layer i l       => l -> Network (LOutput i l) (ll ': ls) -> Network i (l ': ll ': ls)
 
-class CreatableNetwork (i :: SMeasure) (ls :: [*]) (o :: SMeasure) where
-  randomNetwork :: Int -> Network i ls o
-  zeroNetwork   :: Network i ls o
+class CreatableNetwork (i :: SMeasure) (ls :: [*]) where
+  randomNetwork :: Int -> Network i ls
+  zeroNetwork   :: Network i ls
 
-instance OutputLayer i l o => CreatableNetwork i (l ': '[]) o where
+instance OutputLayer i l => CreatableNetwork i (l ': '[]) where
   zeroNetwork        = NNil zeroLayer
   randomNetwork seed = NNil (randomLayer seed)
 
-instance ( Layer i l o
-         , CreatableNetwork o (ll ': ls) o'
-         ) => CreatableNetwork i (l ': ll ': ls) o' where
+instance ( Layer i l
+         , CreatableNetwork (LOutput i l) (ll ': ls)
+         ) => CreatableNetwork i (l ': ll ': ls) where
 
   zeroNetwork        = zeroLayer `NCons` zeroNetwork
   randomNetwork seed = randomLayer seed `NCons` randomNetwork (seed^(9::Int))

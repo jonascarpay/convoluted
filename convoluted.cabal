@@ -44,6 +44,8 @@ library
                      , repa-algorithms
                      , MonadRandom
                      , vector
+                     , cereal
+                     , cereal-vector
 
 test-suite convoluted-test
   type:                exitcode-stdio-1.0
