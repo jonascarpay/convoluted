@@ -12,6 +12,7 @@ import Static
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num
 import Data.Maybe
+import Data.Serialize
 
 -- | A convolution layer performs the correlation operation on its forward pass, and a convolution on the
 --   backward pass.
@@ -21,6 +22,10 @@ data Convolution (od :: Nat) (id :: Nat) (kh :: Nat) (kw :: Nat) (oh :: Nat) (ow
               -> SArray U (ZZ ::. od        ::. oh ::. ow)
               -> Maybe (Gradient (Convolution od id kh kw oh ow))
               -> Convolution od id kh kw oh ow
+
+instance Serialize (Convolution od id kh kw oh ow) where
+  put = undefined
+  get = undefined
 
 instance Show (Convolution od id kh kw oh ow) where
   show (Convolution w b _) = unlines ["Convolution", "Weights:", show w, "Bias:", show b]
@@ -62,8 +67,12 @@ instance
   , (kh :+ (kh :+ oh :- 1) :- 1) ~ (oh :+ (2 :* (kh :- 1)))
   , (kw :+ (kw :+ ow :- 1) :- 1) ~ (ow :+ (2 :* (kw :- 1)))
   ) => Layer (ZZ ::. bat ::. id ::. ih ::. iw)
-             (Convolution od id kh kw oh ow)
-             (ZZ ::. bat ::. od ::. oh ::. ow) where
+             (Convolution od id kh kw oh ow) where
+
+
+    type LOutput (ZZ ::. bat ::. id ::. ih ::. iw)
+                 (Convolution od id kh kw oh ow) =
+                 (ZZ ::. bat ::. od ::. oh ::. ow)
 
     runForward (Convolution w b _) x =
       sComputeP $ (w `corrB` x) %+ sExpand b
