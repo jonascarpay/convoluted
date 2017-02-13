@@ -16,6 +16,8 @@ import Data.Array.Repa.Algorithms.Randomish as R
 import Data.Monoid
 import Data.Proxy
 import qualified Data.Vector.Unboxed as U
+import Data.Serialize
+import Data.Vector.Serialize ()
 
 newtype SArray r (s :: SMeasure) = SArray (R.Array r (ShapeOf s) Double)
 instance Measure s => Show (SArray U s) where
@@ -27,6 +29,11 @@ instance Measure s => Show (SArray D s) where
   show (SArray arr)
     | size (extent arr) <= 1000 = "Delayed Static " <> show (computeS arr :: R.Array U (ShapeOf s ) Double)
     | otherwise = "Delayed Static Array of size " <> show (extent arr)
+
+instance Measure s => Serialize (SArray U s) where
+  put (SArray arr) = put (toUnboxed arr)
+  get = do arr <- get
+           return$ sFromUnboxed arr
 
 {-# INLINE sFromFunction #-}
 sFromFunction :: forall s. Measure s => (ShapeOf s -> Double) -> SArray D s
