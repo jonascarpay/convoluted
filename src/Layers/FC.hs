@@ -11,12 +11,22 @@ import Network
 import Static
 import Data.Maybe
 import Data.Singletons.TypeLits
+import Data.Serialize
 
 data FC (i :: Nat) (o :: Nat) where
   FC :: SArray U (ZZ ::. i ::. o)
      -> SArray U (ZZ ::. o)
      -> Maybe (Gradient (FC i o))
      -> FC i o
+
+instance ( KnownNat i, KnownNat o
+         ) => Serialize (FC i o) where
+  put (FC w b _) = do put w
+                      put b
+
+  get            = do w <- get
+                      b <- get
+                      return$ FC w b Nothing
 
 instance ( KnownNat i, KnownNat o
          ) => Updatable (FC i o) where
@@ -37,8 +47,9 @@ instance ( KnownNat i, KnownNat o
        return $! FC w' b' (Just (vw', vb'))
 
 instance ( KnownNat bat, KnownNat i, KnownNat o
-         ) => Layer (ZZ ::. bat ::. i) (FC i o) (ZZ ::. bat ::. o) where
+         ) => Layer (ZZ ::. bat ::. i) (FC i o) where
 
+  type LOutput (ZZ ::. bat ::. i) (FC i o) = ZZ ::. bat ::. o
   runForward (FC w b _) x = sComputeP$ (x `smmMult` w) %+ sExpand b
 
   runBackwards (FC w _ _) x _ dy =
