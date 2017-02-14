@@ -1,11 +1,11 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Conduits where
+module Network.Conduits where
 
 import Network
 import Conduit
 import Static
-import Runners
+import Network.Runners
 import Control.Applicative
 
 trainC :: forall m i ls.

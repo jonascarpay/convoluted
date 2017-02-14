@@ -3,7 +3,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Label where
+module Network.Label where
 
 import Static
 import Data.Singletons

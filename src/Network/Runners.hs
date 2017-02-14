@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 
-module Runners where
+module Network.Runners where
 
 import Network
 import Static
