@@ -35,7 +35,7 @@ instance ( KnownNat i, KnownNat o
 
   zeroLayer = FC sZeros sZeros Nothing
 
-  randomLayer seed = FC (sRandom seed 0 1) (sRandom (seed*9) 0 1) Nothing
+  randomLayer seed = FC (sRandom seed (-1) 1) (sRandom (seed*9) (-1) 1) Nothing
 
   applyDelta (LearningParameters α γ λ) (FC w b mVel) (dw, db) =
     do let (vw,vb) = fromMaybe (sZeros, sZeros) mVel
