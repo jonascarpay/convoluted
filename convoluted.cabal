@@ -29,6 +29,7 @@ library
                      , Layers.Flatten
                      , Layers.Pool
                      , Layers.ReLU
+                     , Layers.Logit
                      , Layers.FC
                      , Label
   default-language:    Haskell2010

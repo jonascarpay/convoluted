@@ -41,9 +41,11 @@ instance ( KnownNat i, KnownNat o
     do let (vw,vb) = fromMaybe (sZeros, sZeros) mVel
 
        vw' <- sComputeP$ sZipWith (\v d -> γ*v - α*d) vw dw
-       w'  <- sComputeP$ sZipWith (\w v -> w+v - λ*w) w  vw'
        vb' <- sComputeP$ sZipWith (\v d -> γ*v - α*d) vb db
+
+       w'  <- sComputeP$ sZipWith (\w v -> w+v - λ*w) w  vw'
        b'  <- sComputeP$ sZipWith (\b v -> b+v - λ*b) b  vb'
+
        return $! FC w' b' (Just (vw', vb'))
 
 instance ( KnownNat bat, KnownNat i, KnownNat o
