@@ -19,3 +19,6 @@ type MNIST = Network (ZZ ::. BatchSize ::. 1 ::. 28 ::. 28)
 mnist = randomNetwork seed :: MNIST
 ```
 see [convoluted-mnist](https://github.com/jonascarpay/convoluted-mnist)
+
+#### Thanks
+I borrowed heavily from [Huw Campbell's grenade](https://github.com/HuwCampbell/grenade), and like the author of that library, from [Justin Le's blog posts on dependently typed neural networks](https://blog.jle.im/entry/practical-dependent-types-in-haskell-1.html).
