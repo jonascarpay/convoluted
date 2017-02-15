@@ -44,7 +44,7 @@ library
                      , singletons
                      , repa
                      , repa-algorithms
-                     , MonadRandom
+                     , containers
                      , vector
                      , cereal
                      , cereal-vector
