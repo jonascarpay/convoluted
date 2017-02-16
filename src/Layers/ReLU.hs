@@ -13,7 +13,7 @@ import Data.Serialize
 data ReLU = ReLU
 
 instance Updatable ReLU where
-  type Gradient ReLU = ReLU
+  type Gradient ReLU = ()
   zeroLayer = ReLU
 
 instance Measure s => Layer s ReLU where
@@ -21,7 +21,7 @@ instance Measure s => Layer s ReLU where
   runForward _ x = sComputeP$ sMap (max 0) x
   runBackwards _ _ y dy =
     do dx <- sComputeP$ sZipWith (\x t -> if t > 0 then x else 0) dy y
-       return (ReLU, dx)
+       return ((), dx)
 
 instance Serialize ReLU where
   put _ = return ()

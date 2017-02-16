@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE Strict #-}
 
 module Layers.Pool where
 
@@ -19,7 +20,7 @@ instance Serialize Pool where
   get   = return Pool
 
 instance Updatable Pool where
-  type Gradient Pool = Pool
+  type Gradient Pool = ()
   zeroLayer          = Pool
 
 instance ( KnownNat h, KnownNat (Halve h), KnownNat w, KnownNat (Halve w), KnownNat bat, KnownNat d
@@ -36,7 +37,7 @@ instance ( KnownNat h, KnownNat (Halve h), KnownNat w, KnownNat (Halve w), Known
 
   runBackwards _ (SArray x) (SArray y) (SArray dy)
     = do dx <- sComputeP$ sFromFunction f
-         return (Pool, dx)
+         return ((), dx)
       where
         halve (b:.y:.x) = b:. y `div` 2 :. x `div` 2
         f pos

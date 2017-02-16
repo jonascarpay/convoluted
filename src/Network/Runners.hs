@@ -1,4 +1,6 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BangPatterns #-}
 
 module Network.Runners where
 
@@ -16,7 +18,7 @@ trainOnce :: Monad m
           -> SArray U i -- ^ Input
           -> SArray U (NOutput (Network i ls)) -- ^ Corresponding output
           -> m (Network i ls, Loss)
-trainOnce net0 params x0 y0 = do (net', loss, _) <- go net0 x0 y0
+trainOnce net0 params x0 y0 = do (!net', !loss, _) <- go net0 x0 y0
                                  return (net', loss)
   where
     go :: Monad m

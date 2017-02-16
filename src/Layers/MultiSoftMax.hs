@@ -5,6 +5,7 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE Strict #-}
 
 module Layers.MultiSoftMax where
 
@@ -24,7 +25,7 @@ instance Serialize (MultiSoftMax cs) where
   get   = return MultiSoftMax
 
 instance Updatable (MultiSoftMax cs) where
-  type Gradient (MultiSoftMax cs) = (MultiSoftMax cs)
+  type Gradient (MultiSoftMax cs) = ()
   applyDelta _ _ _ = return MultiSoftMax
   randomLayer _    = MultiSoftMax
   zeroLayer        = MultiSoftMax
@@ -47,7 +48,7 @@ instance
     do let n = fromInteger $ natVal (Proxy :: Proxy bat)
 
        dx <- sComputeP$ sZipWith (\y l -> (y-l)/n) y dy
-       return (MultiSoftMax, dx)
+       return ((), dx)
 
 instance (KnownNat bat, Layer (ZZ ::. bat ::. o) (MultiSoftMax cs))
   => OutputLayer (ZZ ::. bat ::. o) (MultiSoftMax cs) where

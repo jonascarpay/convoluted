@@ -18,7 +18,7 @@ instance Serialize Flatten where
   get   = return Flatten
 
 instance Updatable Flatten where
-  type Gradient Flatten = Flatten
+  type Gradient Flatten = ()
   zeroLayer = Flatten
 
 instance ( KnownNat (h :* d :* w), KnownNat bat, KnownNat h, KnownNat d, KnownNat w
@@ -30,4 +30,4 @@ instance ( KnownNat (h :* d :* w), KnownNat bat, KnownNat h, KnownNat d, KnownNa
 
   runBackwards _ _ _ dy =
     do dx <- sComputeP $ sReshape dy
-       return (Flatten, dx)
+       return ((), dx)
