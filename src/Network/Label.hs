@@ -9,6 +9,7 @@ module Network.Label
   , hcat
   , vcat
   , fill
+  , maxed
   , (<|>)
   , (<->)
   , toArray
@@ -44,9 +45,17 @@ singleton x
   | otherwise = Label . Sq.singleton $ x
   where c = fromInteger$ natVal (Proxy :: Proxy c)
 
-fill :: forall r cs. KnownNat (r :* Length cs) =>Int -> LabelComposite r cs
+fill :: forall r cs. KnownNat (r :* Length cs) => Int -> LabelComposite r cs
 fill x = Label$ Sq.replicate size x
   where size = fromInteger$ natVal (Proxy :: Proxy (r :* Length cs))
+
+-- | Fill every label with its maximum value according to its type
+maxed :: forall r cs.
+          ( KnownNat r
+          , SingI (Concat (Replicate r cs)) )
+          => LabelComposite r cs
+maxed = Label . Sq.fromList $ vals
+  where vals = fromInteger . subtract 1 <$> fromSing (sing :: Sing (Concat (Replicate r cs)))
 
 instance KnownNat c => Num (LabelSingle c) where
   Label (Sq.viewl -> x1 Sq.:< _) + Label (Sq.viewl -> x2 Sq.:< _) = singleton$ x1 + x2
