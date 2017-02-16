@@ -1,7 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE GADTs #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 
@@ -9,6 +8,8 @@ module Network.Label
   ( singleton
   , hcat
   , vcat
+  , (<|>)
+  , (<->)
   , toArray
   , fromArray
   , LabelComposite
@@ -53,6 +54,11 @@ instance KnownNat c => Num (LabelSingle c) where
 hcat :: LabelComposite 1 c1 -> LabelComposite 1 c2 -> LabelComposite 1 (c1 :++ c2)
 hcat (Label s1) (Label s2) = Label$ s1 Sq.>< s2
 
+(<|>) = hcat
+(<->) = vcat
+infixl 6 <|>
+infixl 5 <->
+
 vcat :: LabelComposite r1 cols -> LabelComposite r2 cols -> LabelComposite (r1 :+ r2) cols
 vcat (Label s1) (Label s2) = Label$ s1 Sq.>< s2
 
@@ -72,17 +78,16 @@ toArray (Label seq) = sFromUnboxed vec
                     writeLabels v 0 (cycle cs) (Sq.viewl seq)
                     U.unsafeFreeze v
 
-    writeLabels _ _      _       Sq.EmptyL     = return ()
-    writeLabels v offset ~(c:cs) ~(n Sq.:< ns) =
+    writeLabels _ _      _       Sq.EmptyL    = return ()
+    writeLabels v offset (c:cs) ~(n Sq.:< ns) =
       do UM.write v (offset + n) 1
          writeLabels v (offset + fromInteger c) cs (Sq.viewl ns)
 
 fromArray :: forall r cs . SingI cs => SArray U (ZZ ::. r ::. Sum cs) -> LabelComposite r cs
-fromArray (SArray (R.toUnboxed -> vec)) = Label$ go vec (cycle cs)
+fromArray (SArray (R.toUnboxed -> vec)) = Label$ readLabels vec (cycle cs)
   where
     cs = fromSing (sing :: Sing cs)
-    go vec ~(c:cs) =
+    readLabels vec (c:cs) =
       case U.splitAt (fromInteger c) vec of
-        (h, t)
-          | U.null h  -> Sq.empty
-          | otherwise -> U.maxIndex h Sq.<| go t cs
+        (h, t) | U.null h  -> Sq.empty
+               | otherwise -> U.maxIndex h Sq.<| readLabels t cs
