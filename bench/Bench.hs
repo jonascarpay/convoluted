@@ -7,7 +7,7 @@ import Criterion.Main
 import Static
 import Layers
 import Network
-import Runners
+import Network.Runners
 import Data.Functor.Identity
 
 type N = 16
