@@ -13,6 +13,7 @@ module Static.Array
 
 import Static.Measure
 import Data.Array.Repa                      as R
+import Data.Array.Repa.Unsafe               as R
 import Data.Array.Repa.Algorithms.Randomish as R
 import Data.Monoid
 import Data.Proxy
@@ -144,7 +145,7 @@ sZeros = SArray . computeS $ fromFunction sh (const 0)
 sExpand :: forall sml big r1. (sml `Suffix` big, Source r1 Double)
         => SArray r1 sml
         -> SArray D  big
-sExpand (SArray src) = SArray $ backpermute sh expand src
+sExpand (SArray src) = SArray $ unsafeBackpermute sh expand src
   where sh = mExtent (Proxy :: Proxy big)
 
 {-# INLINE sBackpermute #-}
@@ -152,7 +153,7 @@ sBackpermute :: forall s1 s2 r. (Source r Double, Measure s1, Measure s2)
              => (ShapeOf s2 -> ShapeOf s1)
              -> SArray r s1
              -> SArray D s2
-sBackpermute f (SArray arr) = SArray$ backpermute sh f arr
+sBackpermute f (SArray arr) = SArray$ unsafeBackpermute sh f arr
   where sh = mExtent (Proxy :: Proxy s2)
 
 {-# INLINE sTraverse #-}
@@ -161,5 +162,5 @@ sTraverse :: forall s1 s2 r.
           => SArray r s1
           -> ((ShapeOf s1 -> Double) -> ShapeOf s2 -> Double)
           -> SArray D s2
-sTraverse (SArray arr) f = SArray$ R.traverse arr (const sh) f
+sTraverse (SArray arr) f = SArray$ R.unsafeTraverse arr (const sh) f
   where sh = mExtent (Proxy :: Proxy s2)

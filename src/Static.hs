@@ -150,7 +150,7 @@ sumOuter' (SArray arr) = sFromFunction f
 {-# INLINE sumOuter #-}
 sumOuter :: ( Measure (ZZ ::. d2 ::. d3 ::. d4), Source r Double )
          => SArray r (ZZ ::. d1 ::. d2 ::. d3 ::. d4) -> SArray D (ZZ ::. d2 ::. d3 ::. d4)
-sumOuter (SArray arr) = sFromFunction (\ (Z:.z:.y:.x) -> sumAllS$ slice arr (Any:.z:.y:.x))
+sumOuter (SArray arr) = sFromFunction (\ (Z:.z:.y:.x) -> sumAllS$ unsafeSlice arr (Any:.z:.y:.x))
 
 {-# INLINE smmMult #-}
 smmMult :: ( KnownNat r, KnownNat h, KnownNat c
