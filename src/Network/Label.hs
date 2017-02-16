@@ -8,6 +8,7 @@ module Network.Label
   ( singleton
   , hcat
   , vcat
+  , fill
   , (<|>)
   , (<->)
   , toArray
@@ -42,6 +43,10 @@ singleton x
   | x < 0  = error "Label value too low"
   | otherwise = Label . Sq.singleton $ x
   where c = fromInteger$ natVal (Proxy :: Proxy c)
+
+fill :: forall r cs. KnownNat (r :* Length cs) =>Int -> LabelComposite r cs
+fill x = Label$ Sq.replicate size x
+  where size = fromInteger$ natVal (Proxy :: Proxy (r :* Length cs))
 
 instance KnownNat c => Num (LabelSingle c) where
   Label (Sq.viewl -> x1 Sq.:< _) + Label (Sq.viewl -> x2 Sq.:< _) = singleton$ x1 + x2
