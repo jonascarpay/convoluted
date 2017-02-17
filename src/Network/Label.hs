@@ -11,6 +11,7 @@ module Network.Label
   , vcat
   , fill
   , maxed
+  , fromList
   , (<|>)
   , (<->)
   , toArray
@@ -106,3 +107,11 @@ fromArray (SArray (R.toUnboxed -> vec)) = Label$ readLabels vec (cycle cs)
       case U.splitAt (fromInteger c) vec of
         (h, t) | U.null h  -> Sq.empty
                | otherwise -> U.maxIndex h Sq.<| readLabels t cs
+
+fromList :: forall r cs. ( KnownNat (r :* Sum cs)
+            ) => [Int] -> LabelComposite r cs
+fromList ns
+  | Sq.length seq /= size = error "List too short"
+  | otherwise = Label seq
+  where seq = Sq.fromList ns
+        size = fromInteger$ natVal (Proxy :: Proxy (r :* Sum cs))
