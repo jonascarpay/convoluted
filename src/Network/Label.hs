@@ -108,10 +108,10 @@ fromArray (SArray (R.toUnboxed -> vec)) = Label$ readLabels vec (cycle cs)
         (h, t) | U.null h  -> Sq.empty
                | otherwise -> U.maxIndex h Sq.<| readLabels t cs
 
-fromList :: forall r cs. ( KnownNat (Sum cs), KnownNat r, SingI cs, KnownNat (r :* Sum cs)
+fromList :: forall r cs. ( KnownNat (r :* Length cs)
             ) => [Int] -> LabelComposite r cs
 fromList ns
-  | Sq.length seq /= size = error "List too short"
-  | otherwise = Label seq
+  | Sq.length seq /= size = error "List length did not match label size"
+  | otherwise                  = Label seq
   where seq = Sq.fromList ns
-        size = fromInteger$ natVal (Proxy :: Proxy (r :* Sum cs))
+        size = fromInteger$ natVal (Proxy :: Proxy (r :* Length cs))
