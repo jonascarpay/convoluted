@@ -67,16 +67,16 @@ instance KnownNat c => Num (LabelSingle c) where
   signum (Label seq) = Label$ signum <$> seq
   fromInteger = singleton . fromInteger
 
-hcat :: LabelComposite 1 c1 -> LabelComposite 1 c2 -> LabelComposite 1 (c1 :++ c2)
+hcat, (<|>) :: LabelComposite 1 c1 -> LabelComposite 1 c2 -> LabelComposite 1 (c1 :++ c2)
 hcat (Label s1) (Label s2) = Label$ s1 Sq.>< s2
-
 (<|>) = hcat
-(<->) = vcat
 infixl 6 <|>
-infixl 5 <->
 
-vcat :: LabelComposite r1 cols -> LabelComposite r2 cols -> LabelComposite (r1 :+ r2) cols
+
+vcat, (<->) :: LabelComposite r1 cols -> LabelComposite r2 cols -> LabelComposite (r1 :+ r2) cols
 vcat (Label s1) (Label s2) = Label$ s1 Sq.>< s2
+(<->) = vcat
+infixl 5 <->
 
 toArray :: forall r cs. ( KnownNat r
                         , SingI cs
