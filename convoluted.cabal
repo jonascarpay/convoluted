@@ -43,6 +43,7 @@ library
                        -funfolding-use-threshold1000 -funfolding-keeness-factor1000
   build-depends:       base >= 4.7 && < 5
                      , singletons
+                     , mtl
                      , repa
                      , repa-algorithms
                      , containers

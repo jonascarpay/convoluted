@@ -18,6 +18,9 @@ module Network.Label
   , fromArray
   , LabelComposite
   , LabelSingle
+  , LabelParser
+  , parseLabel
+  , pop
   ) where
 
 import Static
@@ -26,6 +29,8 @@ import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num
 import Data.Singletons.Prelude.List
 import Control.Monad.ST.Strict
+import Control.Monad.Except
+import Control.Monad.State
 import qualified Data.Vector.Unboxed         as U
 import qualified Data.Vector.Unboxed.Mutable as UM
 import qualified Data.Sequence               as Sq
@@ -114,3 +119,16 @@ fromList ns
   | otherwise                  = Label seq
   where seq = Sq.fromList ns
         size = fromInteger$ natVal (Proxy :: Proxy (r :* Length cs))
+
+type LabelParser a = StateT (Sq.Seq Int) (Except String) a
+
+parseLabel :: LabelComposite r cs -> LabelParser a -> Either String a
+parseLabel (Label seq) = runExcept . flip evalStateT seq
+
+pop :: LabelParser Int
+pop = do seq <- get
+         case Sq.viewl seq of
+           (h Sq.:< t) -> do put t
+                             return h
+
+           Sq.EmptyL   -> throwError "Label contained too few elements"

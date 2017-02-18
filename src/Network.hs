@@ -42,8 +42,10 @@ class (Measure i, Updatable l, Measure (LOutput i l)) => Layer (i :: SMeasure) l
   runBackwards :: (Monad m, Measure i)
                => l
                -> SArray U i                 -- ^ Input data during forward pass
-               -> SArray U (LOutput i l)                 -- ^ Output data during forward pass. Note that this could be recomputed, but it seems more efficient to keep a reference around.
-               -> SArray U (LOutput i l)                 -- ^ Gradient on the output data
+               -> SArray U (LOutput i l)     -- ^ Output data during forward pass.
+                                             --   Note that this could be recomputed,
+                                             --   but it seems more efficient to keep a reference around.
+               -> SArray U (LOutput i l)     -- ^ Gradient on the output data
                -> m (Gradient l, SArray U i) -- ^ Gradient on the weights, gradient on the input data
 
 class Layer i l => OutputLayer i l where
