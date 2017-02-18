@@ -72,7 +72,6 @@ hcat (Label s1) (Label s2) = Label$ s1 Sq.>< s2
 (<|>) = hcat
 infixl 6 <|>
 
-
 vcat, (<->) :: LabelComposite r1 cols -> LabelComposite r2 cols -> LabelComposite (r1 :+ r2) cols
 vcat (Label s1) (Label s2) = Label$ s1 Sq.>< s2
 (<->) = vcat

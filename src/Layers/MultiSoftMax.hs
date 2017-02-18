@@ -1,11 +1,11 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE Strict #-}
 
 module Layers.MultiSoftMax where
 
@@ -60,11 +60,11 @@ instance (KnownNat bat, Layer (ZZ ::. bat ::. o) (MultiSoftMax cs))
        return (dx, (p, dataLoss fx y))
 
    where
-     n = fromInteger$ natVal (Proxy :: Proxy bat)
+     !n = fromInteger$ natVal (Proxy :: Proxy bat)
      loss 0 = 0
      loss x = - log x
-     dataLoss (SArray f) (SArray y) =
+     dataLoss (SArray !f) (SArray !y) =
        (/n) . sumAllS $ R.zipWith (*) (R.map loss f) y
 
-     percentCorrect x y = do s <- sSumAllP$ sZipWith (\x y -> if x > 0.5 then y else 0) x y
+     percentCorrect x y = do !s <- sSumAllP$ sZipWith (\ !x !y -> if x > 0.5 then y else 0) x y
                              return (s*100/n)
