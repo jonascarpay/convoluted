@@ -60,11 +60,11 @@ maxed = Label . Sq.fromList $ vals
   where vals = fromInteger . subtract 1 <$> fromSing (sing :: Sing (Concat (Replicate r cs)))
 
 instance KnownNat c => Num (LabelSingle c) where
-  Label (Sq.viewl -> x1 Sq.:< _) + Label (Sq.viewl -> x2 Sq.:< _) = singleton$ x1 + x2
-  Label (Sq.viewl -> x1 Sq.:< _) - Label (Sq.viewl -> x2 Sq.:< _) = singleton$ x1 - x2
-  Label (Sq.viewl -> x1 Sq.:< _) * Label (Sq.viewl -> x2 Sq.:< _) = singleton$ x1 * x2
-  abs (Label (Sq.viewl -> x Sq.:< _)) = singleton$ abs x
-  signum = undefined
+  Label seq1 + Label seq2 = Label$ Sq.zipWith (+) seq1 seq2
+  Label seq1 - Label seq2 = Label$ Sq.zipWith (-) seq1 seq2
+  Label seq1 * Label seq2 = Label$ Sq.zipWith (*) seq1 seq2
+  abs    (Label seq) = Label$ abs    <$> seq
+  signum (Label seq) = Label$ signum <$> seq
   fromInteger = singleton . fromInteger
 
 hcat :: LabelComposite 1 c1 -> LabelComposite 1 c2 -> LabelComposite 1 (c1 :++ c2)
