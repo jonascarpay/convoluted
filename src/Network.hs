@@ -90,3 +90,18 @@ instance ( Layer i l
 
   zeroNetwork        = zeroLayer `NCons` zeroNetwork
   randomNetwork seed = randomLayer seed `NCons` randomNetwork (seed^(9::Int))
+
+class Cast i1 i2 ls where
+  cast :: Network i1 ls -> Network i2 ls
+
+instance ( OutputLayer i1 l
+         , OutputLayer i2 l
+         ) => Cast i1 i2 '[l] where
+  cast (NNil l) = NNil l
+
+instance ( Layer i1 l
+         , Layer i2 l
+         , Cast (LOutput i1 l) (LOutput i2 l) (ll ': ls)
+         ) => Cast i1 i2 (l ': ll ': ls) where
+
+  cast (l `NCons` ls) = l `NCons` cast ls
