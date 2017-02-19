@@ -46,13 +46,13 @@ zeroParams = LearningParameters 0 0 0
 
 main :: IO ()
 main = defaultMain
-  [ bgroup "Base" [ bench "forward"  $ whnf (runIdentity . forward   (randomNetwork 0 :: BaseNet)) sZeros
-                  , bench "backward" $ whnf (runIdentity . trainOnce (randomNetwork 0 :: BaseNet) zeroParams sZeros) sZeros
+  [ bgroup "Base" [ bench "forward"  $ whnf (runIdentity . forward   (defaultRandom :: BaseNet)) sZeros
+                  , bench "backward" $ whnf (runIdentity . trainOnce (defaultRandom :: BaseNet) zeroParams sZeros) sZeros
                   ]
-  , bgroup "FC"   [ bench "forward"  $ whnf (runIdentity . forward   (randomNetwork 0 :: FCNet)) sZeros
-                  , bench "backward" $ whnf (runIdentity . trainOnce (randomNetwork 0 :: FCNet) zeroParams sZeros) sZeros
+  , bgroup "FC"   [ bench "forward"  $ whnf (runIdentity . forward   (defaultRandom :: FCNet)) sZeros
+                  , bench "backward" $ whnf (runIdentity . trainOnce (defaultRandom :: FCNet) zeroParams sZeros) sZeros
                   ]
-  , bgroup "Conv" [ bench "forward"  $ whnf (runIdentity . forward   (randomNetwork 0 :: ConvNet)) sZeros
-                  , bench "backward" $ whnf (runIdentity . trainOnce (randomNetwork 0 :: ConvNet) zeroParams sZeros) sZeros
+  , bgroup "Conv" [ bench "forward"  $ whnf (runIdentity . forward   (defaultRandom :: ConvNet)) sZeros
+                  , bench "backward" $ whnf (runIdentity . trainOnce (defaultRandom :: ConvNet) zeroParams sZeros) sZeros
                   ]
   ]

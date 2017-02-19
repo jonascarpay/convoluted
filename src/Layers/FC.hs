@@ -29,13 +29,14 @@ instance ( KnownNat i, KnownNat o
                       return$ FC w b Nothing
 
 instance ( KnownNat i, KnownNat o
+         ) => Creatable (FC i o) where
+
+  seeded seed = FC (seeded seed) (seeded seed) Nothing
+
+instance ( KnownNat i, KnownNat o
          ) => Updatable (FC i o) where
 
   type Gradient (FC i o) = (SArray U (ZZ ::. i ::. o), SArray U (ZZ ::. o))
-
-  zeroLayer = FC sZeros sZeros Nothing
-
-  randomLayer seed = FC (sRandom seed (-1) 1) (sRandom (seed*9) (-1) 1) Nothing
 
   applyDelta (LearningParameters α γ λ) (FC w b mVel) (dw, db) =
     do let (vw,vb) = fromMaybe (sZeros, sZeros) mVel

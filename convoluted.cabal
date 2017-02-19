@@ -18,7 +18,8 @@ library
   default-extensions:  StrictData
                      , TypeOperators
                      , TypeFamilies
-  exposed-modules:     Network
+  exposed-modules:     Creatable
+                     , Network
                      , Network.Runners
                      , Network.Label
                      , Network.Conduits

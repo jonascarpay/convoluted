@@ -19,9 +19,11 @@ instance Serialize Pool where
   put _ = return ()
   get   = return Pool
 
+instance Creatable Pool where
+  seeded _ = Pool
+
 instance Updatable Pool where
   type Gradient Pool = ()
-  zeroLayer          = Pool
 
 instance ( KnownNat h, KnownNat (Halve h), KnownNat w, KnownNat (Halve w), KnownNat bat, KnownNat d
          ) => Layer (ZZ ::. bat ::. d ::. h ::. w) Pool where

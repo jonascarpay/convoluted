@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Network.Conduits where
 
@@ -10,13 +11,13 @@ import Control.Applicative
 
 trainC :: forall m i ls.
           ( MonadIO m
-          , CreatableNetwork i ls
+          , Creatable (Network i ls)
           )
        => LearningParameters
        -> Conduit ( SArray U i
                   , SArray U (NOutput (Network i ls))
                   ) m (Network i ls)
-trainC params = go (randomNetwork 9 :: Network i ls)
+trainC params = go (seeded 9 :: Network i ls)
   where go net = do mxy <- await
                     case mxy of
                       Just (x, y) -> do (net', (pct, dtl)) <- trainOnce net params x y

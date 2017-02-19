@@ -1,6 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE Strict #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -129,6 +128,6 @@ pop :: LabelParser Int
 pop = do seq <- get
          case Sq.viewl seq of
            (h Sq.:< t) -> do put t
-                             return h
+                             return $! h
 
            Sq.EmptyL   -> throwError "Label contained too few elements"

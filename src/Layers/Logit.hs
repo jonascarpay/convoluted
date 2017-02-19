@@ -16,11 +16,12 @@ instance Serialize Logit where
   put _ = return ()
   get   = return Logit
 
+instance Creatable Logit where
+  seeded _ = Logit
+
 instance Updatable Logit where
   type Gradient Logit = ()
   applyDelta _ _ _ = return Logit
-  randomLayer _    = Logit
-  zeroLayer        = Logit
 
 instance Measure s => Layer s Logit where
 

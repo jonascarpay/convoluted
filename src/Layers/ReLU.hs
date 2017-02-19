@@ -12,9 +12,11 @@ import Data.Serialize
 
 data ReLU = ReLU
 
+instance Creatable ReLU where
+  seeded _ = ReLU
+
 instance Updatable ReLU where
   type Gradient ReLU = ()
-  zeroLayer = ReLU
 
 instance Measure s => Layer s ReLU where
   type LOutput i ReLU = i

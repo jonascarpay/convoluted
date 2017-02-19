@@ -24,11 +24,12 @@ instance Serialize (MultiSoftMax cs) where
   put _ = return ()
   get   = return MultiSoftMax
 
+instance Creatable (MultiSoftMax cs) where
+  seeded _ = MultiSoftMax
+
 instance Updatable (MultiSoftMax cs) where
   type Gradient (MultiSoftMax cs) = ()
   applyDelta _ _ _ = return MultiSoftMax
-  randomLayer _    = MultiSoftMax
-  zeroLayer        = MultiSoftMax
 
 instance
   ( KnownNat bat, KnownNat o

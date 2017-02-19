@@ -12,9 +12,11 @@ import Data.Serialize
 
 data Id = Id
 
+instance Creatable Id where
+  seeded _ = Id
+
 instance Updatable Id where
   type Gradient Id = ()
-  zeroLayer = Id
 
 instance Measure s => Layer s Id where
   type LOutput i Id = i

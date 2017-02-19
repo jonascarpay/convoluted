@@ -17,9 +17,11 @@ instance Serialize Flatten where
   put _ = return ()
   get   = return Flatten
 
+instance Creatable Flatten where
+  seeded _ = Flatten
+
 instance Updatable Flatten where
   type Gradient Flatten = ()
-  zeroLayer = Flatten
 
 instance ( KnownNat (h :* d :* w), KnownNat bat, KnownNat h, KnownNat d, KnownNat w
          , (bat :* h :* d :* w) ~ (bat :* (h :* d :* w))

@@ -25,12 +25,18 @@ data Convolution (od :: Nat) (id :: Nat) (kh :: Nat) (kw :: Nat) (oh :: Nat) (ow
 
 instance ( KnownNat od, KnownNat oh, KnownNat ow, KnownNat id, KnownNat kh, KnownNat kw
          ) => Serialize (Convolution od id kh kw oh ow) where
+
   put (Convolution w b _) = do put w
                                put b
 
   get = do w <- get
            b <- get
            return$ Convolution w b Nothing
+
+instance ( KnownNat od , KnownNat id, KnownNat kh, KnownNat kw, KnownNat oh, KnownNat ow
+         ) => Creatable (Convolution od id kh kw oh ow) where
+
+  seeded seed = Convolution (seeded seed) (seeded seed) Nothing
 
 instance Show (Convolution od id kh kw oh ow) where
   show (Convolution w b _) = unlines ["Convolution", "Weights:", show w, "Bias:", show b]
@@ -42,10 +48,6 @@ instance ( KnownNat od , KnownNat id, KnownNat kh, KnownNat kw, KnownNat oh, Kno
     ( SArray U (ZZ ::. od ::. id ::. kh ::. kw)
     , SArray U (ZZ ::. od ::. oh ::. ow))
 
-  zeroLayer = Convolution sZeros sZeros Nothing
-
-  randomLayer seed =
-    Convolution (sRandom seed (-1) 1) (sRandom (seed*9) (-1) 1) Nothing
 
   {-# INLINE applyDelta #-}
   applyDelta (LearningParameters α γ λ) (Convolution w b mVel) (dw, db) =

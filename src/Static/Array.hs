@@ -12,6 +12,7 @@ module Static.Array
   ) where
 
 import Static.Measure
+import Creatable
 import Data.Array.Repa                      as R
 import Data.Array.Repa.Unsafe               as R
 import Data.Array.Repa.Algorithms.Randomish as R
@@ -36,6 +37,10 @@ instance Measure s => Serialize (SArray U s) where
   put (SArray arr) = put (toUnboxed arr)
   get = do arr <- get
            return$ sFromUnboxed arr
+
+instance Measure s => Creatable (SArray U s) where
+  {-# INLINE seeded #-}
+  seeded s = sRandom s (-1) 1
 
 {-# INLINE sFromFunction #-}
 sFromFunction :: forall s. Measure s => (ShapeOf s -> Double) -> SArray D s

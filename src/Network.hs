@@ -9,9 +9,13 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Network where
+module Network
+  ( module Network
+  , module Creatable
+  ) where
 
 import Static
+import Creatable
 import Data.Serialize
 
 type Loss = (Double, Double)
@@ -21,14 +25,12 @@ data LearningParameters = LearningParameters
   , learningRegularization :: Double
   } deriving (Eq, Show)
 
-class Serialize l => Updatable l where
+class ( Creatable l, Serialize l
+      ) => Updatable l where
   type Gradient l :: *
   applyDelta      :: Monad m => LearningParameters -> l -> Gradient l -> m l
-  randomLayer     :: Int -> l
-  zeroLayer       :: l
 
-  randomLayer _    = zeroLayer
-  applyDelta _ _ _ = return zeroLayer
+  applyDelta _ _ _ = return defaultRandom
 
 -- | An instance of the Layer class is a valid layer for a neural network.
 class (Measure i, Updatable l, Measure (LOutput i l)) => Layer (i :: SMeasure) l where
@@ -78,20 +80,14 @@ type family NOutput n :: SMeasure where
   NOutput (Network i (l ': '[]))     = LOutput i l
   NOutput (Network i (l ': ll ': ls)) = NOutput (Network (LOutput i l) (ll ': ls))
 
-class CreatableNetwork (i :: SMeasure) (ls :: [*]) where
-  randomNetwork :: Int -> Network i ls
-  zeroNetwork   :: Network i ls
-
-instance OutputLayer i l => CreatableNetwork i (l ': '[]) where
-  zeroNetwork        = NNil zeroLayer
-  randomNetwork seed = NNil (randomLayer seed)
+instance OutputLayer i l => Creatable (Network i '[l]) where
+  seeded s = NNil$ seeded s
 
 instance ( Layer i l
-         , CreatableNetwork (LOutput i l) (ll ': ls)
-         ) => CreatableNetwork i (l ': ll ': ls) where
+         , Creatable (Network (LOutput i l) (ll ': ls))
+         ) => Creatable (Network i (l ': ll ': ls)) where
 
-  zeroNetwork        = zeroLayer `NCons` zeroNetwork
-  randomNetwork seed = randomLayer seed `NCons` randomNetwork (seed^(9::Int))
+  seeded s = seeded s `NCons` seeded s
 
 class Cast i1 i2 ls where
   cast :: Network i1 ls -> Network i2 ls
