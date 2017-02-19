@@ -11,11 +11,10 @@
 
 module Network
   ( module Network
-  , module Creatable
   ) where
 
 import Static
-import Creatable
+import Util
 import Data.Serialize
 
 type Loss = (Double, Double)
@@ -89,17 +88,13 @@ instance ( Layer i l
 
   seeded s = seeded s `NCons` seeded s
 
-class Cast i1 i2 ls where
-  cast :: Network i1 ls -> Network i2 ls
-
-instance ( OutputLayer i1 l
-         , OutputLayer i2 l
-         ) => Cast i1 i2 '[l] where
+instance ( OutputLayer i1 l, OutputLayer i2 l
+         ) => Cast (Network i1 '[l]) (Network i2 '[l]) where
   cast (NNil l) = NNil l
 
-instance ( Layer i1 l
-         , Layer i2 l
-         , Cast (LOutput i1 l) (LOutput i2 l) (ll ': ls)
-         ) => Cast i1 i2 (l ': ll ': ls) where
+instance ( Layer i1 l, Layer i2 l
+         , Cast (Network (LOutput i1 l) (ll ': ls)) (Network (LOutput i2 l) (ll ': ls))
+         ) => Cast (Network i1 (l ': ll ': ls)) (Network i2 (l ': ll ': ls)) where
 
   cast (l `NCons` ls) = l `NCons` cast ls
+

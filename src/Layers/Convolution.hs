@@ -8,6 +8,7 @@
 module Layers.Convolution where
 
 import Network
+import Util
 import Static
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num

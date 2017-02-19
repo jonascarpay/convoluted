@@ -7,6 +7,7 @@ module Layers.Flatten where
 
 import Network
 import Static
+import Util
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num
 import Data.Serialize

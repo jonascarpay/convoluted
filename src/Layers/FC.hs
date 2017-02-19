@@ -9,6 +9,7 @@ module Layers.FC where
 
 import Network
 import Static
+import Util
 import Data.Maybe
 import Data.Singletons.TypeLits
 import Data.Serialize

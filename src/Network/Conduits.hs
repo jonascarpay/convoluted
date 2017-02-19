@@ -4,6 +4,7 @@
 module Network.Conduits where
 
 import Network
+import Util
 import Conduit
 import Static
 import Network.Runners

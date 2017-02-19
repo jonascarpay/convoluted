@@ -7,6 +7,7 @@
 module Layers.Logit where
 
 import Network
+import Util
 import Static
 import Data.Serialize
 

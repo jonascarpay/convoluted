@@ -12,7 +12,7 @@ module Static.Array
   ) where
 
 import Static.Measure
-import Creatable
+import Util
 import Data.Array.Repa                      as R
 import Data.Array.Repa.Unsafe               as R
 import Data.Array.Repa.Algorithms.Randomish as R

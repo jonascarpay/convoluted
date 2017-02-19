@@ -10,6 +10,7 @@
 module Layers.MultiSoftMax where
 
 import Network
+import Util
 import Static
 import Data.Array.Repa as R
 import Data.Singletons.TypeLits
