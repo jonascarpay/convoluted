@@ -1,9 +1,10 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Util (
-  Creatable (..),
-  Cast (..),
-  defaultRandom
+module Util
+  ( Creatable (..)
+  , Cast (..)
+  , defaultRandom
+  , Rect (..)
 ) where
 
 import Data.Serialize
@@ -19,3 +20,4 @@ defaultRandom = seeded 0
 class Cast a b where
   cast :: a -> b
 
+data Rect a = Rect !a !a !a !a

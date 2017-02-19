@@ -26,6 +26,7 @@ library
                      , Static
                      , Static.Array
                      , Static.Measure
+                     , Static.Image
                      , Layers
                      , Layers.MultiSoftMax
                      , Layers.Convolution
@@ -47,6 +48,7 @@ library
                      , mtl
                      , repa
                      , repa-algorithms
+                     , repa-io
                      , containers
                      , vector
                      , cereal
