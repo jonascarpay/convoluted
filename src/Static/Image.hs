@@ -25,11 +25,11 @@ readRaw fp = do ebmp <- readImageFromBMP fp
                   Left  err -> error (show err)
                   Right bmp -> Just bmp
 
-extract :: forall m h w. (Monad m, KnownNat h, KnownNat w)
-        => BMP -> Rect Double -> m (SArray U (ZZ ::. 3 ::. h ::. w))
+extract :: forall h w. (KnownNat h, KnownNat w)
+        => BMP -> Rect Double -> SArray D (ZZ ::. 3 ::. h ::. w)
 extract img (Rect cx cy cw ch)
   | invalid   = error "Crop rectangle out of bounds"
-  | otherwise = sComputeP$ sFromFunction fn
+  | otherwise = sFromFunction fn
   where
 
     invalid = cx < 0 || cy < 0 || cx + cw > 1 || cy + ch > 1
