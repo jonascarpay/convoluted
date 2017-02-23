@@ -5,6 +5,7 @@ import Criterion
 import Criterion.Main
 
 import Static
+import Util
 import Layers
 import Network
 import Network.Runners
