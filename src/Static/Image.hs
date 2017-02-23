@@ -18,12 +18,11 @@ import Data.Proxy
 
 type BMP = Array U DIM2 (Word8, Word8, Word8)
 
-readRaw :: FilePath -> IO (Maybe BMP)
+readRaw :: FilePath -> IO (Either String BMP)
 readRaw fp = do ebmp <- readImageFromBMP fp
                 return $ case ebmp of
-
-                  Left  err -> error (show err)
-                  Right bmp -> Just bmp
+                   Left err -> Left $! show (err)
+                   Right x  -> Right x
 
 extract :: forall h w. (KnownNat h, KnownNat w)
         => BMP -> Rect Double -> SArray D (ZZ ::. 3 ::. h ::. w)
