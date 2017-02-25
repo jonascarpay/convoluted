@@ -57,9 +57,9 @@ instance (KnownNat bat, Layer (ZZ ::. bat ::. o) (MultiSoftMax cs))
   {-# INLINE runOutput #-}
   runOutput l x y =
     do fx      <- runForward l x
-       p       <- percentCorrect fx y
+       c       <- numCorrect fx y
        (_, dx) <- runBackwards l x fx y
-       return (dx, (p, dataLoss fx y))
+       return (dx, ((c, round n), dataLoss fx y))
 
    where
      !n = fromInteger$ natVal (Proxy :: Proxy bat)
@@ -68,5 +68,5 @@ instance (KnownNat bat, Layer (ZZ ::. bat ::. o) (MultiSoftMax cs))
      dataLoss (SArray !f) (SArray !y) =
        (/n) . sumAllS $ R.zipWith (*) (R.map loss f) y
 
-     percentCorrect x y = do !s <- sSumAllP$ sZipWith (\ !x !y -> if x > 0.5 then y else 0) x y
-                             return (s*100/n)
+     numCorrect x y = do !s <- sSumAllP$ sZipWith (\ !x !y -> if x > 0.5 then y else 0) x y
+                         return$! round s

@@ -17,7 +17,8 @@ import Static
 import Util
 import Data.Serialize
 
-type Loss = (Double, Double)
+type Loss = ((Int, Int), Double)
+
 data LearningParameters = LearningParameters
   { learningRate           :: Double
   , learningMomentum       :: Double
