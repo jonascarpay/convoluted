@@ -13,7 +13,7 @@ module Static.Array
 
 import Static.Measure
 import Util
-import Data.Array.Repa                      as R
+import Data.Array.Repa                      as R hiding ((++))
 import Data.Array.Repa.Unsafe               as R
 import Data.Array.Repa.Algorithms.Randomish as R
 import Data.Monoid
@@ -106,7 +106,7 @@ sSumAllS (SArray a) = sumAllS a
 sFromUnboxed :: forall s.Measure s => U.Vector Double -> SArray U s
 sFromUnboxed vec
   | size sh == U.length vec = arr
-  | otherwise               = error "Unboxed vector length did not match target array size"
+  | otherwise               = error$ "sFromUnboxed expected length " ++ show (size sh) ++ ", actual length " ++ show (U.length vec)
   where sh = mExtent (Proxy :: Proxy s)
         arr = SArray $ fromUnboxed sh vec
 
@@ -169,3 +169,9 @@ sTraverse :: forall s1 s2 r.
           -> SArray D s2
 sTraverse (SArray arr) f = SArray$ R.unsafeTraverse arr (const sh) f
   where sh = mExtent (Proxy :: Proxy s2)
+
+sConcat :: Measure s2 => [SArray U s1] -> SArray U s2
+sConcat sarrs = sFromUnboxed . U.concat . fmap (toUnboxed.unwrap) $ sarrs
+  where
+    unwrap (SArray arr) = arr
+
