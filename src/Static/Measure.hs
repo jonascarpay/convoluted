@@ -22,7 +22,8 @@ import Data.Proxy
 data SMeasure = ZZ | SMeasure ::. Nat
 infixl 3 ::.
 
-class (Show (ShapeOf s), Shape (ShapeOf s)) => Measure (s :: SMeasure) where
+class ( Show (ShapeOf s), Shape (ShapeOf s)
+      ) => Measure (s :: SMeasure) where
   type Size               s :: Nat
   type Prepend (n :: Nat) s :: SMeasure
   mExtent :: p s -> ShapeOf s

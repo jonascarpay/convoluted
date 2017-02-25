@@ -15,7 +15,8 @@ import Static
 import Data.Array.Repa as R
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude (Sing, SingI, fromSing, sing)
-import Data.Singletons.Prelude.List (Sum)
+import Data.Singletons.Prelude.Num
+import Data.Singletons.Prelude.List (Sum, Length)
 import Data.Proxy
 import Data.Serialize
 
@@ -36,6 +37,7 @@ instance
   ( KnownNat bat, KnownNat o
   , SingI cs
   , o ~ Sum cs
+  , Measure (ZZ ::. bat ::. o)
   ) => Layer (ZZ ::. bat ::. o) (MultiSoftMax cs) where
 
   type LOutput (ZZ ::. bat ::. o) (MultiSoftMax cs) = (ZZ ::. bat ::. o)
@@ -52,8 +54,10 @@ instance
        dx <- sComputeP$ sZipWith (\y l -> (y-l)/n) y dy
        return ((), dx)
 
-instance (KnownNat bat, Layer (ZZ ::. bat ::. o) (MultiSoftMax cs))
-  => OutputLayer (ZZ ::. bat ::. o) (MultiSoftMax cs) where
+instance ( KnownNat bat
+         , Layer (ZZ ::. bat ::. o) (MultiSoftMax cs)
+         , KnownNat (Length cs :* bat)
+         ) => OutputLayer (ZZ ::. bat ::. o) (MultiSoftMax cs) where
   {-# INLINE runOutput #-}
   runOutput l x y =
     do fx      <- runForward l x
@@ -62,7 +66,7 @@ instance (KnownNat bat, Layer (ZZ ::. bat ::. o) (MultiSoftMax cs))
        return (dx, ((c, round n), dataLoss fx y))
 
    where
-     !n = fromInteger$ natVal (Proxy :: Proxy bat)
+     !n = fromInteger$ natVal (Proxy :: Proxy (Length cs :* bat))
      loss 0 = 0
      loss x = - log x
      dataLoss (SArray !f) (SArray !y) =
