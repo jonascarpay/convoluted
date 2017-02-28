@@ -33,9 +33,9 @@ saveImg p (SArray arr) = computeP img >>= writeImageToBMP p
   where scale x = round . (*255) $ (x - min') / (max' - min')
         min' = foldAllS min (1/0)  arr
         max' = foldAllS max (-1/0) arr
-        pxfn (Z:.y:.x) = ( scale$ arr ! ix3 0 y x
-                         , scale$ arr ! ix3 1 y x
-                         , scale$ arr ! ix3 2 y x)
+        pxfn (Z:.y:.x) = ( scale$ arr ! ix3 0 (h-y-1) x
+                         , scale$ arr ! ix3 1 (h-y-1) x
+                         , scale$ arr ! ix3 2 (h-y-1) x)
         h = fromInteger$ natVal (Proxy :: Proxy h)
         w = fromInteger$ natVal (Proxy :: Proxy w)
         img = fromFunction (Z :. h :. w) pxfn
@@ -61,12 +61,12 @@ extract img (Rect cx cy cw ch)
     Z :. ih' :. iw' = extent img
     iw = fromIntegral iw'
     ih = fromIntegral ih'
-    h  = fromInteger$ natVal (Proxy :: Proxy h)
-    w  = fromInteger$ natVal (Proxy :: Proxy w)
+    oh = fromInteger$ natVal (Proxy :: Proxy h)
+    ow = fromInteger$ natVal (Proxy :: Proxy w)
 
-    px x = round$ iw * (cx + fromIntegral x * cw / w)
-    py y = round$ ih * (cy + fromIntegral y * ch / h)
+    px x = round$ iw * (cx + fromIntegral x * cw / ow)
+    py y = round$ ih * (cy + fromIntegral y * ch / oh)
 
-    fn (Z :. 0 :. y :. x) = let (r,_,_) = img ! (Z :. px x :. py y) in fromIntegral r / 255
-    fn (Z :. 1 :. y :. x) = let (_,g,_) = img ! (Z :. px x :. py y) in fromIntegral g / 255
-    fn (Z :. 2 :. y :. x) = let (_,_,b) = img ! (Z :. px x :. py y) in fromIntegral b / 255
+    fn (Z :. 0 :. y :. x) = let (r,_,_) = img ! (Z :. ih' - py y :. px x) in fromIntegral r / 255
+    fn (Z :. 1 :. y :. x) = let (_,g,_) = img ! (Z :. ih' - py y :. px x) in fromIntegral g / 255
+    fn (Z :. 2 :. y :. x) = let (_,_,b) = img ! (Z :. ih' - py y :. px x) in fromIntegral b / 255
