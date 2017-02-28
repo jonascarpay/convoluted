@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE Strict #-}
 
@@ -6,6 +7,7 @@ module Static.Image
   ( readRaw
   , extract
   , saveImg
+  , sHcat
   , BMP
   ) where
 
@@ -15,6 +17,7 @@ import Data.Array.Repa hiding (extract)
 import Data.Array.Repa.IO.BMP
 import Data.Word
 import Data.Singletons.TypeLits
+import Data.Singletons.Prelude.Num ((:*))
 import Data.Proxy
 
 type BMP = Array U DIM2 (Word8, Word8, Word8)
@@ -36,6 +39,15 @@ saveImg p (SArray arr) = computeP img >>= writeImageToBMP p
         h = fromInteger$ natVal (Proxy :: Proxy h)
         w = fromInteger$ natVal (Proxy :: Proxy w)
         img = fromFunction (Z :. h :. w) pxfn
+
+sHcat :: forall m n d h w. ( Monad m
+         , KnownNat n, KnownNat d, KnownNat h, KnownNat w, KnownNat (n :* w)
+                           ) => SArray U (ZZ ::. n ::. d ::. h ::. w) -> m (SArray U (ZZ ::. d ::. h ::. n :* w))
+
+sHcat arr = sComputeP$ sTraverse arr f
+  where w = fromInteger$ natVal (Proxy :: Proxy w)
+        f lk (Z :. z :. y :. x) = let (d,m) = x `divMod` w
+                                   in lk (ix4 d z y m)
 
 extract :: forall h w. (KnownNat h, KnownNat w)
         => BMP -> Rect Double -> SArray D (ZZ ::. 3 ::. h ::. w)
