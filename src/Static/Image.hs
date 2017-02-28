@@ -5,6 +5,7 @@
 module Static.Image
   ( readRaw
   , extract
+  , saveImg
   , BMP
   ) where
 
@@ -23,6 +24,18 @@ readRaw fp = do ebmp <- readImageFromBMP fp
                 return $ case ebmp of
                    Left err -> Left $! show (err)
                    Right x  -> Right x
+
+saveImg :: forall h w. ( KnownNat h, KnownNat w) => FilePath -> SArray U (ZZ ::. 3 ::. h ::. w) -> IO ()
+saveImg p (SArray arr) = computeP img >>= writeImageToBMP p
+  where scale x = round . (*255) $ (x - min') / (max' - min')
+        min' = foldAllS min (1/0)  arr
+        max' = foldAllS max (-1/0) arr
+        pxfn (Z:.y:.x) = ( scale$ arr ! ix3 0 y x
+                         , scale$ arr ! ix3 1 y x
+                         , scale$ arr ! ix3 2 y x)
+        h = fromInteger$ natVal (Proxy :: Proxy h)
+        w = fromInteger$ natVal (Proxy :: Proxy w)
+        img = fromFunction (Z :. h :. w) pxfn
 
 extract :: forall h w. (KnownNat h, KnownNat w)
         => BMP -> Rect Double -> SArray D (ZZ ::. 3 ::. h ::. w)
