@@ -7,29 +7,42 @@ module Static.Image
   ( readRaw
   , extract
   , saveImg
+  , saveMany
   , sHcat
   , BMP
   ) where
 
 import Static
 import Util
-import Data.Array.Repa hiding (extract)
+import Data.Array.Repa hiding (extract, (++))
 import Data.Array.Repa.IO.BMP
 import Data.Word
 import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num ((:*))
 import Data.Proxy
+import Control.Monad
 
 type BMP = Array U DIM2 (Word8, Word8, Word8)
 
 readRaw :: FilePath -> IO (Either String BMP)
 readRaw fp = do ebmp <- readImageFromBMP fp
                 return $ case ebmp of
-                   Left err -> Left $! show (err)
+                   Left err -> Left $! show err
                    Right x  -> Right x
 
-saveImg :: forall h w. ( KnownNat h, KnownNat w) => FilePath -> SArray U (ZZ ::. 3 ::. h ::. w) -> IO ()
-saveImg p (SArray arr) = computeP img >>= writeImageToBMP p
+saveMany :: (KnownNat n, KnownNat h, KnownNat w) => FilePath -> SArray U (ZZ ::. n ::. 3 ::. h ::. w) -> IO ()
+saveMany p imgs = do imgs <- split imgs
+                     zipWithM_ saveImg ((p++) . show <$> [(0::Int)..]) imgs
+
+split :: forall m n d h w. (KnownNat n, Monad m, KnownNat d, KnownNat h, KnownNat w)
+      => SArray U (ZZ ::. n ::. d ::. h ::. w) -> m [SArray U (ZZ ::. d ::. h ::. w)]
+split arr = sequence$ slice' arr <$> [0..n-1]
+  where n = fromInteger$ natVal (Proxy :: Proxy n)
+        slice' :: SArray U (ZZ ::. n ::. d ::. h ::. w) -> Int -> m (SArray U (ZZ ::. d ::. h ::. w))
+        slice' (SArray arr) n = sComputeP$ sFromFunction (\ (Z:.z:.y:.x) -> arr ! ix4 n z y x)
+
+saveImg :: forall h w. (KnownNat h, KnownNat w) => FilePath -> SArray U (ZZ ::. 3 ::. h ::. w) -> IO ()
+saveImg p (SArray arr) = computeP img >>= writeImageToBMP (p ++ ".bmp")
   where scale x = round . (*255) $ (x - min') / (max' - min')
         min' = foldAllS min (1/0)  arr
         max' = foldAllS max (-1/0) arr
