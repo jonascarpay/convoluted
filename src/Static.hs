@@ -80,11 +80,11 @@ corrVolumesB :: forall bat kd kh kw id r1 r2 oh ih ow iw.
                 -> SArray D  (ZZ ::. kd  ::. id ::. oh ::. ow)
 corrVolumesB (SArray krns) (SArray imgs) = sFromFunction convF
   where
-    kb :. _ :. kh :. kw = mExtent (Proxy :: Proxy (ZZ ::. bat ::. kd ::. kh ::. kw))
+    Z:. kb :. _ :. kh :. kw = mExtent (Proxy :: Proxy (ZZ ::. bat ::. kd ::. kh ::. kw))
     convF (Z:.n:.z:.y:.x) = sumAllS $ krn *^ img
       where
-        krn = extract (zeroDim :. n :. 0 :. 0) (kb :. 1 :. kh :. kw) krns
-        img = extract (zeroDim :. z :. y :. x) (kb :. 1 :. kh :. kw) imgs
+        krn = extract (Z :. 0 :. n :. 0 :. 0) (Z :. kb :. 1 :. kh :. kw) krns
+        img = extract (Z :. 0 :. z :. y :. x) (Z :. kb :. 1 :. kh :. kw) imgs
 
 type family Halve (n :: Nat) :: Nat where
   Halve 0 = 0

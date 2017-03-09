@@ -25,12 +25,12 @@ import Data.Vector.Serialize ()
 newtype SArray r (s :: SMeasure) = SArray (R.Array r (ShapeOf s) Double)
 instance Measure s => Show (SArray U s) where
   show (SArray arr)
-    | size (extent arr) <= 1000 = "Static " <> show arr
+    | size (extent arr) <= 10000 = "Static " <> show arr
     | otherwise = "Static Array of size " <> show (extent arr)
 
 instance Measure s => Show (SArray D s) where
   show (SArray arr)
-    | size (extent arr) <= 1000 = "Delayed Static " <> show (computeS arr :: R.Array U (ShapeOf s ) Double)
+    | size (extent arr) <= 10000 = "Delayed Static " <> show (computeS arr :: R.Array U (ShapeOf s ) Double)
     | otherwise = "Delayed Static Array of size " <> show (extent arr)
 
 instance Measure s => Serialize (SArray U s) where
@@ -175,3 +175,5 @@ sConcat sarrs = sFromUnboxed . U.concat . fmap (toUnboxed.unwrap) $ sarrs
   where
     unwrap (SArray arr) = arr
 
+sHead :: (Measure s, Source r Double) => SArray r s -> Double
+sHead (SArray arr) = linearIndex arr 1

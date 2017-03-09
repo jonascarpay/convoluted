@@ -35,4 +35,5 @@ trainOnce net0 params x0 y0 = do (!net', !loss, _) <- go net0 x0 y0
          (ls', loss, df) <- go ls f y
          (dl, dx) <- runBackwards l x f df
          l' <- applyDelta params l dl
+         s  <- sSumAllP$ df
          return (l' `NCons` ls', loss, dx)

@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,6 +14,7 @@ import Util
 import Data.Maybe
 import Data.Singletons.TypeLits
 import Data.Serialize
+import Data.Proxy
 
 data FC (i :: Nat) (o :: Nat) where
   FC :: SArray U (ZZ ::. i ::. o)
@@ -32,7 +34,10 @@ instance ( KnownNat i, KnownNat o
 instance ( KnownNat i, KnownNat o
          ) => Creatable (FC i o) where
 
-  seeded seed = FC (seeded seed) (seeded seed) Nothing
+  seeded seed = FC (sRandom seed (negate s) s) sZeros Nothing
+    where
+      i = fromInteger$ natVal (Proxy :: Proxy i)
+      s = i**(-1/2)
 
 instance ( KnownNat i, KnownNat o
          ) => Updatable (FC i o) where

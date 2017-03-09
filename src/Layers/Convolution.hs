@@ -1,4 +1,5 @@
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -14,6 +15,7 @@ import Data.Singletons.TypeLits
 import Data.Singletons.Prelude.Num
 import Data.Maybe
 import Data.Serialize
+import Data.Proxy
 
 -- | A convolution layer performs the correlation operation on its forward pass, and a convolution on the
 --   backward pass.
@@ -37,7 +39,12 @@ instance ( KnownNat od, KnownNat oh, KnownNat ow, KnownNat id, KnownNat kh, Know
 instance ( KnownNat od , KnownNat id, KnownNat kh, KnownNat kw, KnownNat oh, KnownNat ow
          ) => Creatable (Convolution od id kh kw oh ow) where
 
-  seeded seed = Convolution (seeded seed) (seeded seed) Nothing
+  seeded seed = Convolution (sRandom seed (negate s) s) sZeros Nothing
+    where
+      h = fromInteger$ natVal (Proxy :: Proxy oh)
+      w = fromInteger$ natVal (Proxy :: Proxy ow)
+      d = fromInteger$ natVal (Proxy :: Proxy od)
+      s = (h*w*d)**(-1/2)
 
 instance Show (Convolution od id kh kw oh ow) where
   show (Convolution w b _) = unlines ["Convolution", "Weights:", show w, "Bias:", show b]

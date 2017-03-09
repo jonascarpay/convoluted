@@ -80,6 +80,6 @@ extract img (Rect cx cy cw ch)
     px x = round$ iw * (cx + fromIntegral x * cw / ow)
     py y = round$ ih * (cy + fromIntegral y * ch / oh)
 
-    fn (Z :. 0 :. y :. x) = let (r,_,_) = img ! (Z :. ih' - py y :. px x) in fromIntegral r / 255
-    fn (Z :. 1 :. y :. x) = let (_,g,_) = img ! (Z :. ih' - py y :. px x) in fromIntegral g / 255
-    fn (Z :. 2 :. y :. x) = let (_,_,b) = img ! (Z :. ih' - py y :. px x) in fromIntegral b / 255
+    fn (Z :. 0 :. y :. x) = let (r,_,_) = img ! (Z :. ih' - py y :. px x) in fromIntegral r / 255 - 0.5
+    fn (Z :. 1 :. y :. x) = let (_,g,_) = img ! (Z :. ih' - py y :. px x) in fromIntegral g / 255 - 0.5
+    fn (Z :. 2 :. y :. x) = let (_,_,b) = img ! (Z :. ih' - py y :. px x) in fromIntegral b / 255 - 0.5
